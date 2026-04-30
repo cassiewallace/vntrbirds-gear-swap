@@ -1,8 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
+const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const ADMIN_PASSWORD = 'birdswap26';
+const VOLUNTEER_PASSWORD = 'birdswapvolunteer';
 
 const CATEGORIES = [
   'All Categories',
@@ -25,7 +29,9 @@ function LoginScreen({ onLogin }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
-      onLogin();
+      onLogin('admin');
+    } else if (password === VOLUNTEER_PASSWORD) {
+      onLogin('volunteer');
     } else {
       setError('Incorrect password. Please try again.');
       setPassword('');
@@ -36,7 +42,7 @@ function LoginScreen({ onLogin }) {
     <div className="login-screen">
       <div className="login-card">
         <h1>Admin Access</h1>
-        <p className="login-sub">VNTRbirds Gear Swap+Sale</p>
+        <p className="login-sub">VNTRbirds Gear Swap + Sale</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Password</label>
@@ -59,12 +65,107 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+/* ── Donor Profile Modal ── */
+function DonorProfileModal({ submission, onClose }) {
+  const items = submission.items || [];
+  const soldItems = items.filter(i => i.sold);
+  const totalListed = items.reduce((s, i) => s + (i.price || 0), 0);
+  const totalSold = soldItems.reduce((s, i) => s + (i.price || 0), 0);
+  const extraPct = submission.extraDonationPercent || 0;
+  const sellerPct = (60 - extraPct) / 100;
+  const payout = totalSold * sellerPct;
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="donor-modal-overlay" onClick={onClose}>
+      <div className="donor-modal" onClick={e => e.stopPropagation()}>
+        <button className="donor-modal-close" onClick={onClose}>✕</button>
+
+        <div className="donor-modal-header">
+          <div className="donor-modal-name">{submission.firstName} {submission.lastName}</div>
+          <div className="donor-modal-meta">
+            {submission.email && <span>✉ {submission.email}</span>}
+            {submission.phone && <span>📞 {submission.phone}</span>}
+            {submission.venmo && (
+              <a href={`https://venmo.com/${submission.venmo}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)', textDecoration: 'underline' }}>
+                💸 @{submission.venmo}
+              </a>
+            )}
+          </div>
+          <div style={{ marginTop: 10, fontSize: '0.82rem', color: 'var(--teal)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>✓</span>
+            <span>
+              Waiver accepted
+              {submission.agreementTimestamp?.toDate
+                ? ` on ${submission.agreementTimestamp.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                : ''}
+            </span>
+          </div>
+        </div>
+
+        <div className="donor-modal-stats">
+          <div className="donor-stat">
+            <div className="donor-stat-label">Items Sold</div>
+            <div className="donor-stat-value">{soldItems.length} / {items.length}</div>
+          </div>
+          <div className="donor-stat highlight">
+            <div className="donor-stat-label">Total Sold</div>
+            <div className="donor-stat-value">${fmt(totalSold)}</div>
+          </div>
+          <div className="donor-stat teal">
+            <div className="donor-stat-label">Payout ({Math.round(sellerPct * 100)}%)</div>
+            <div className="donor-stat-value">${fmt(payout)}</div>
+          </div>
+        </div>
+
+        <div style={{ overflowX: 'auto', marginTop: 8 }}>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Brand</th>
+              <th>Model</th>
+              <th>Color</th>
+              <th>Size</th>
+              <th>Price</th>
+              <th>BOEC</th>
+              <th>Sold</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={i} className={item.sold ? 'sold-row' : ''}>
+                <td>{item.category}</td>
+                <td>{item.description}</td>
+                <td>{item.brand}</td>
+                <td>{item.model || '—'}</td>
+                <td>{item.color}</td>
+                <td>{item.size}</td>
+                <td>${fmt(item.price || 0)}</td>
+                <td>{item.donateToBoec ? <span className="boec-badge">Yes</span> : <span style={{ color: 'var(--gray-400)' }}>No</span>}</td>
+                <td>{item.sold ? '✓' : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Item List Tab ── */
 function ItemListTab({ submissions }) {
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [soldFilter, setSoldFilter] = useState('all');
   const [boecFilter, setBoecFilter] = useState('all');
+  const [profileSub, setProfileSub] = useState(null);
 
   const allItems = useMemo(() => {
     const rows = [];
@@ -86,7 +187,6 @@ function ItemListTab({ submissions }) {
 
   const filtered = useMemo(() => {
     return allItems.filter(row => {
-      if (categoryFilter !== 'All Categories' && row.category !== categoryFilter) return false;
       if (soldFilter === 'sold' && !row.sold) return false;
       if (soldFilter === 'unsold' && row.sold) return false;
       if (boecFilter === 'yes' && !row.donateToBoec) return false;
@@ -98,23 +198,33 @@ function ItemListTab({ submissions }) {
       }
       return true;
     });
-  }, [allItems, search, categoryFilter, soldFilter, boecFilter]);
+  }, [allItems, search, soldFilter, boecFilter]);
 
   async function toggleSold(row) {
-    const sub = submissions.find(s => s.id === row._docId);
-    if (!sub) return;
-    const updatedItems = sub.items.map((item, idx) =>
-      idx === row._itemIdx ? { ...item, sold: !item.sold } : item
-    );
     try {
-      await updateDoc(doc(db, 'submissions', row._docId), { items: updatedItems });
+      const docRef = doc(db, 'submissions', row._docId);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) return;
+      const freshItems = (snap.data().items || []).map((item, idx) =>
+        idx === row._itemIdx ? { ...item, sold: !row.sold } : item
+      );
+      await updateDoc(docRef, { items: freshItems });
     } catch (err) {
       console.error('Error updating sold status:', err);
     }
   }
 
+  const openProfile = useCallback((docId) => {
+    const sub = submissions.find(s => s.id === docId);
+    if (sub) setProfileSub(sub);
+  }, [submissions]);
+
   return (
     <div>
+      {profileSub && (
+        <DonorProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+      )}
+
       <div className="admin-controls">
         <input
           type="search"
@@ -123,9 +233,6 @@ function ItemListTab({ submissions }) {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <select className="admin-filter" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
         <select className="admin-filter" value={soldFilter} onChange={e => setSoldFilter(e.target.value)}>
           <option value="all">All Items</option>
           <option value="sold">Sold Only</option>
@@ -151,41 +258,39 @@ function ItemListTab({ submissions }) {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Donor Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Venmo</th>
                 <th>Category</th>
                 <th>Description</th>
                 <th>Brand</th>
                 <th>Model</th>
                 <th>Color</th>
                 <th>Size</th>
-                <th>Price</th>
+                <th>Donor</th>
                 <th>BOEC</th>
+                <th>Price</th>
                 <th>Sold</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row, i) => (
+              {filtered.map((row) => (
                 <tr key={`${row._docId}-${row._itemIdx}`} className={row.sold ? 'sold-row' : ''}>
-                  <td>{row.donorName}</td>
-                  <td>{row.donorEmail}</td>
-                  <td>{row.donorPhone}</td>
-                  <td>{row.donorVenmo}</td>
                   <td>{row.category}</td>
                   <td>{row.description}</td>
                   <td>{row.brand}</td>
                   <td>{row.model || '—'}</td>
                   <td>{row.color}</td>
                   <td>{row.size}</td>
-                  <td>${(row.price || 0).toFixed(2)}</td>
+                  <td>
+                    <button className="donor-link" onClick={() => openProfile(row._docId)}>
+                      {row.donorName}
+                    </button>
+                  </td>
                   <td>
                     {row.donateToBoec
                       ? <span className="boec-badge">Yes</span>
                       : <span style={{ color: 'var(--gray-400)' }}>No</span>}
                   </td>
-                  <td style={{ textDecoration: 'none' }}>
+                  <td>${fmt(row.price || 0)}</td>
+                  <td>
                     <input
                       type="checkbox"
                       checked={!!row.sold}
@@ -206,6 +311,20 @@ function ItemListTab({ submissions }) {
 /* ── Payouts Tab ── */
 function PayoutsTab({ submissions }) {
   const [paidMap, setPaidMap] = useState({});
+  const [paidSort, setPaidSort] = useState(null);
+  const [profileSub, setProfileSub] = useState(null);
+  const [search, setSearch] = useState('');
+
+  const openProfile = useCallback((id) => {
+    const sub = submissions.find(s => s.id === id);
+    if (sub) setProfileSub(sub);
+  }, [submissions]); // null | 'paid-first' | 'unpaid-first'
+
+  function cyclePaidSort() {
+    setPaidSort(prev =>
+      prev === null ? 'unpaid-first' : prev === 'unpaid-first' ? 'paid-first' : null
+    );
+  }
 
   const perDonor = useMemo(() => {
     return submissions.map(sub => {
@@ -249,16 +368,30 @@ function PayoutsTab({ submissions }) {
       <div className="payouts-summary">
         <div className="payout-stat">
           <div className="stat-label">Total Gross Sales</div>
-          <div className="stat-value">${eventTotals.grossSales.toFixed(2)}</div>
+          <div className="stat-value">${fmt(eventTotals.grossSales)}</div>
         </div>
         <div className="payout-stat highlight">
           <div className="stat-label">Total Owed to Sellers</div>
-          <div className="stat-value">${eventTotals.totalOwedToSellers.toFixed(2)}</div>
+          <div className="stat-value">${fmt(eventTotals.totalOwedToSellers)}</div>
         </div>
         <div className="payout-stat teal">
           <div className="stat-label">Total to Scholarship Fund</div>
-          <div className="stat-value">${eventTotals.totalToScholarship.toFixed(2)}</div>
+          <div className="stat-value">${fmt(eventTotals.totalToScholarship)}</div>
         </div>
+      </div>
+
+      {profileSub && (
+        <DonorProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+      )}
+
+      <div className="admin-controls" style={{ marginBottom: 16 }}>
+        <input
+          type="search"
+          className="admin-search"
+          placeholder="Search by donor name…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {perDonor.length === 0 ? (
@@ -275,17 +408,36 @@ function PayoutsTab({ submissions }) {
                 <th>Total Sold</th>
                 <th>% Owed</th>
                 <th>Amount Owed</th>
-                <th>Paid</th>
+                <th
+                  onClick={cyclePaidSort}
+                  style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                >
+                  Paid {paidSort === 'paid-first' ? '↑' : paidSort === 'unpaid-first' ? '↓' : '↕'}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {perDonor.map(donor => (
+              {[...perDonor].filter(d => !search.trim() || d.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
+                if (!paidSort) return 0;
+                const aPaid = !!paidMap[a.id];
+                const bPaid = !!paidMap[b.id];
+                if (paidSort === 'paid-first') return aPaid === bPaid ? 0 : aPaid ? -1 : 1;
+                return aPaid === bPaid ? 0 : aPaid ? 1 : -1;
+              }).map(donor => (
                 <tr key={donor.id}>
-                  <td><strong>{donor.name}</strong></td>
-                  <td style={{ color: 'var(--blue)' }}>{donor.venmo}</td>
-                  <td>${donor.totalSold.toFixed(2)}</td>
+                  <td>
+                    <button className="donor-link" onClick={() => openProfile(donor.id)}>
+                      {donor.name}
+                    </button>
+                  </td>
+                  <td>
+                    {donor.venmo
+                      ? <a href={`https://venmo.com/${donor.venmo}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)', textDecoration: 'underline' }}>@{donor.venmo}</a>
+                      : '—'}
+                  </td>
+                  <td>${fmt(donor.totalSold)}</td>
                   <td>{donor.sellerPct}%</td>
-                  <td><strong>${donor.owedToSeller.toFixed(2)}</strong></td>
+                  <td>${fmt(donor.owedToSeller)}</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input
@@ -311,7 +463,13 @@ function PayoutsTab({ submissions }) {
 
 /* ── Main Admin Page ── */
 export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false);
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(
+    () => !!sessionStorage.getItem('admin_role')
+  );
+  const [role, setRole] = useState(
+    () => sessionStorage.getItem('admin_role') || 'volunteer'
+  );
   const [activeTab, setActiveTab] = useState('items');
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -328,13 +486,27 @@ export default function AdminPage() {
     return unsub;
   }, [authenticated]);
 
-  if (!authenticated) return <LoginScreen onLogin={() => setAuthenticated(true)} />;
+  if (!authenticated) return <LoginScreen onLogin={(r) => {
+    sessionStorage.setItem('admin_role', r);
+    setRole(r);
+    setAuthenticated(true);
+  }} />;
 
   return (
     <div className="admin-wrapper">
       <header className="admin-header">
-        <div className="logo-text">VNTR<span>birds</span> Admin</div>
-        <span className="admin-badge">Admin</span>
+        <div className="logo-text">VNTR<span>birds</span> Gear Swap</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="admin-badge">{role === 'admin' ? 'Admin' : 'Volunteer'}</span>
+          {role === 'admin' && (
+            <button className="admin-settings-btn" onClick={() => navigate('/admin/settings')} title="Settings">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="admin-content">
@@ -343,7 +515,7 @@ export default function AdminPage() {
             className={`admin-tab ${activeTab === 'items' ? 'active' : ''}`}
             onClick={() => setActiveTab('items')}
           >
-            Item List
+            Items
           </button>
           <button
             className={`admin-tab ${activeTab === 'payouts' ? 'active' : ''}`}

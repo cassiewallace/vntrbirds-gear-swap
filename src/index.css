@@ -16,6 +16,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'MADE Tommy Soft';
+  src: url('/fonts/MADE Tommy Soft Regular PERSONAL USE.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MADE Tommy Soft';
+  src: url('/fonts/MADE Tommy Soft Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --blue: #216bb4;
   --magenta: #b33895;
@@ -93,6 +109,7 @@ h4, h5, h6 {
   background: var(--white);
   padding: 20px 32px;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 20px;
@@ -149,7 +166,7 @@ h4, h5, h6 {
 .intro-logo-img {
   width: 80px;
   height: 80px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -166,11 +183,12 @@ h4, h5, h6 {
 
 .intro-logo-event {
   font-family: 'MADE Tommy Soft', sans-serif;
-  font-size: 1rem;
-  font-weight: 300;
+  font-size: 0.85rem;
+  font-weight: 400;
   color: var(--gray-600);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
+  text-align: center;
 }
 
 .page-content {
@@ -178,19 +196,19 @@ h4, h5, h6 {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 20px 24px 80px;
 }
 
 /* ── Progress Bar ── */
 .progress-bar-wrapper {
   display: flex;
   gap: 6px;
-  margin-bottom: 40px;
+  margin-top: 32px;
 }
 
 .progress-step {
   flex: 1;
-  height: 3px;
+  height: 4px;
   background: var(--gray-200);
   transition: background 0.3s;
 }
@@ -258,7 +276,7 @@ h4, h5, h6 {
 .form-label {
   display: block;
   font-family: 'MADE Tommy Soft', sans-serif;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 0.78rem;
   color: var(--dark);
   margin-bottom: 7px;
@@ -299,6 +317,45 @@ h4, h5, h6 {
 .form-select.error {
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(198,40,40,0.1);
+}
+
+/* ── Prefix input (e.g. @ for Venmo) ── */
+.input-prefix-wrapper {
+  display: flex;
+  align-items: stretch;
+  border: var(--border);
+  background: var(--white);
+  transition: box-shadow 0.15s;
+}
+
+.input-prefix-wrapper.error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(198,40,40,0.1);
+}
+
+.input-prefix-wrapper:focus-within {
+  box-shadow: 0 0 0 3px rgba(33,107,180,0.15);
+}
+
+.input-prefix {
+  padding: 12px 10px 12px 14px;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: 1rem;
+  color: var(--gray-600);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.input-prefix-field {
+  flex: 1;
+  padding: 12px 14px 12px 0;
+  border: none;
+  outline: none;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: 1rem;
+  color: var(--dark);
+  background: transparent;
+  width: 100%;
 }
 
 .form-select {
@@ -439,7 +496,7 @@ h4, h5, h6 {
 .checkbox-label {
   font-size: 1rem;
   line-height: 1.5;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* ── Toggle ── */
@@ -496,7 +553,7 @@ h4, h5, h6 {
 
 .toggle-label {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--dark);
 }
 
@@ -528,7 +585,7 @@ h4, h5, h6 {
   padding: 10px 16px;
   border: var(--border);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 400;
   background: var(--gray-50);
   flex: 1;
   min-width: 180px;
@@ -542,26 +599,29 @@ h4, h5, h6 {
 .scholarship-banner {
   background: var(--dark);
   color: var(--white);
-  padding: 18px 24px;
+  padding: 24px;
   margin-bottom: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .scholarship-banner .pct {
   font-family: 'Lequire', sans-serif;
-  font-size: 2.9rem;
+  font-size: 4rem;
   font-weight: normal;
   color: var(--teal);
   line-height: 1;
   flex-shrink: 0;
+  align-self: center;
 }
 
 .scholarship-banner p {
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: 1.025rem;
+  line-height: 1.3;
   opacity: 0.9;
+  margin: 0;
+  align-self: center;
 }
 
 .warning-block {
@@ -622,7 +682,7 @@ h4, h5, h6 {
   background: var(--white);
   padding: 12px 14px;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--dark);
 }
 
@@ -718,7 +778,7 @@ h4, h5, h6 {
   color: var(--white);
   padding: 2px 8px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.04em;
 }
 
@@ -764,6 +824,121 @@ h4, h5, h6 {
   padding: 5px 12px;
 }
 
+.admin-settings-btn {
+  background: none;
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.admin-settings-btn:hover {
+  opacity: 1;
+}
+
+.admin-back-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--white);
+  cursor: pointer;
+  padding: 6px 14px;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: 0.88rem;
+  transition: background 0.15s;
+}
+
+.admin-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ── Settings Page ── */
+.settings-card {
+  background: var(--white);
+  border: var(--border);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+}
+
+.settings-row + .settings-row {
+  border-top: var(--border);
+}
+
+.settings-row-title {
+  font-family: 'Lequire', sans-serif;
+  font-size: 0.85rem;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.settings-row-desc {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.season-toggle {
+  display: flex;
+  border: var(--border);
+  flex-shrink: 0;
+}
+
+.season-btn {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+  color: var(--gray-600);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.season-btn + .season-btn {
+  border-left: var(--border);
+}
+
+.season-btn.active {
+  background: var(--dark);
+  color: var(--white);
+}
+
+.clear-data-btn {
+  background: none;
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 10px 20px;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.clear-data-btn:hover:not(:disabled) {
+  background: var(--error);
+  color: var(--white);
+}
+
+.clear-data-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .admin-content {
   flex: 1;
   padding: 28px;
@@ -799,10 +974,6 @@ h4, h5, h6 {
   border-bottom-color: var(--dark);
 }
 
-.admin-tab:hover:not(.active) {
-  color: var(--dark);
-  background: var(--gray-100);
-}
 
 /* Admin controls */
 .admin-controls {
@@ -889,9 +1060,6 @@ h4, h5, h6 {
   border-bottom: none;
 }
 
-.admin-table tr:hover td {
-  background: var(--gray-50);
-}
 
 .admin-table input[type="checkbox"] {
   width: 18px;
@@ -956,7 +1124,7 @@ h4, h5, h6 {
   color: var(--success);
   padding: 2px 8px;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .unpaid-badge {
@@ -965,7 +1133,7 @@ h4, h5, h6 {
   color: var(--gray-600);
   padding: 2px 8px;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* Login screen */
@@ -1004,7 +1172,7 @@ h4, h5, h6 {
   color: var(--error);
   font-size: 0.88rem;
   margin-top: 10px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* ── Date display ── */
@@ -1062,4 +1230,133 @@ h4, h5, h6 {
     gap: 8px;
     text-align: center;
   }
+}
+
+/* ── Donor Link ── */
+.donor-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'MADE Tommy Soft', sans-serif;
+  font-size: inherit;
+  font-weight: 400;
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.donor-link:hover {
+  color: var(--dark);
+}
+
+/* ── Donor Profile Modal ── */
+.donor-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px 16px;
+  overflow-y: auto;
+}
+
+.donor-modal {
+  background: var(--white);
+  border: var(--border);
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+  padding: 32px;
+  overflow-x: hidden;
+}
+
+@media (max-width: 600px) {
+  .donor-modal {
+    padding: 24px 16px;
+  }
+}
+
+.donor-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--gray-600);
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.donor-modal-close:hover {
+  color: var(--dark);
+}
+
+.donor-modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: var(--border);
+}
+
+.donor-modal-name {
+  font-family: 'Lequire', sans-serif;
+  font-size: 1.4rem;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--dark);
+  margin-bottom: 10px;
+}
+
+.donor-modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 0.92rem;
+  color: var(--gray-600);
+}
+
+.donor-modal-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.donor-stat {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px 16px;
+  border: var(--border);
+  background: var(--gray-50);
+}
+
+.donor-stat.highlight {
+  border-color: var(--teal);
+  background: #f0fafa;
+}
+
+.donor-stat.teal {
+  border-color: var(--teal);
+  background: #e6f7f7;
+}
+
+.donor-stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+
+.donor-stat-value {
+  font-family: 'Lequire', sans-serif;
+  font-size: 1.3rem;
+  font-weight: normal;
+  color: var(--dark);
 }
