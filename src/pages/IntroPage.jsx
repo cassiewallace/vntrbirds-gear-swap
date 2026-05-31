@@ -19,6 +19,7 @@ const CATEGORIES = [
   { name: 'Backpacks', items: [] },
   { name: 'Helmets', items: ['No clear damage'] },
   { name: 'Dog Gear', items: [] },
+  { name: 'Apparel', items: ['Hoodies', 'Jeans', 'Ball caps', 'Jackets', 'Base layers'] },
   { name: '"Free Bin"', items: ['Gently used socks, hats, tees, etc.'] },
 ];
 

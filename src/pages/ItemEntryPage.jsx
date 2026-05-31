@@ -14,6 +14,7 @@ const CATEGORIES = [
   'Backpack',
   'Helmet',
   'Dog Gear',
+  'Apparel',
   'Free Bin',
 ];
 
