@@ -273,16 +273,16 @@ function ItemListTab({ submissions, role }) {
           <option value="sold">Sold Only</option>
           <option value="unsold">Unsold Only</option>
         </select>
-        <select className="admin-filter" value={boecFilter} onChange={e => setBoecFilter(e.target.value)}>
-          <option value="all">All BOEC</option>
-          <option value="yes">BOEC: Yes</option>
-          <option value="no">BOEC: No</option>
-        </select>
         <select className="admin-filter" value={sellerFilter} onChange={e => setSellerFilter(e.target.value)}>
           <option value="all">All Sellers</option>
           {sellerNames.map(name => (
             <option key={name} value={name}>{name}</option>
           ))}
+        </select>
+        <select className="admin-filter" value={boecFilter} onChange={e => setBoecFilter(e.target.value)}>
+          <option value="all">All BOEC</option>
+          <option value="yes">BOEC: Yes</option>
+          <option value="no">BOEC: No</option>
         </select>
       </div>
 
@@ -578,7 +578,7 @@ function SettingsTab() {
   const controlColStyle = { flex: 1 };
 
   return (
-    <div style={{ maxWidth: 600, padding: '8px 0' }}>
+    <div style={{ maxWidth: 600, padding: '20px 16px' }}>
 
       {/* Season */}
       <div style={rowStyle}>
