@@ -327,20 +327,6 @@ function ItemListTab({ submissions, role }) {
     });
   }, [allItems, search, soldFilter, boecFilter, sellerFilter]);
 
-  async function toggleAccepted(row) {
-    try {
-      const docRef = doc(db, 'submissions', row._docId);
-      const snap = await getDoc(docRef);
-      if (!snap.exists()) return;
-      const freshItems = (snap.data().items || []).map((item, idx) =>
-        idx === row._itemIdx ? { ...item, accepted: !row.accepted } : item
-      );
-      await updateDoc(docRef, { items: freshItems });
-    } catch (err) {
-      console.error('Error updating accepted status:', err);
-    }
-  }
-
   async function toggleSold(row) {
     try {
       const docRef = doc(db, 'submissions', row._docId);
@@ -409,7 +395,6 @@ function ItemListTab({ submissions, role }) {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Accepted</th>
                 <th>Brand</th>
                 <th>Description</th>
                 <th>Model</th>
@@ -429,14 +414,6 @@ function ItemListTab({ submissions, role }) {
                   onClick={() => setSelectedItem(row)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <td onClick={e => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={!!row.accepted}
-                      onChange={() => toggleAccepted(row)}
-                      title={row.accepted ? 'Mark as not accepted' : 'Mark as accepted'}
-                    />
-                  </td>
                   <td>{row.brand}</td>
                   <td>{row.description}</td>
                   <td>{row.model || '—'}</td>

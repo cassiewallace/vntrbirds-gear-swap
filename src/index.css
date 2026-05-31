@@ -1067,7 +1067,7 @@ h4, h5, h6 {
 }
 
 .clickable-row:hover td {
-  background: var(--gray-50);
+  background: #f0fafa;
 }
 
 .sold-row td {
