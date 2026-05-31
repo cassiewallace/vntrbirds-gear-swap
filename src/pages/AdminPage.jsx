@@ -128,9 +128,8 @@ function SellerProfileModal({ submission, onClose }) {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Category</th>
-              <th>Description</th>
               <th>Brand</th>
+              <th>Description</th>
               <th>Model</th>
               <th>Color</th>
               <th>Size</th>
@@ -142,9 +141,8 @@ function SellerProfileModal({ submission, onClose }) {
           <tbody>
             {items.map((item, i) => (
               <tr key={i} className={item.sold ? 'sold-row' : ''}>
-                <td>{item.category}</td>
-                <td>{item.description}</td>
                 <td>{item.brand}</td>
+                <td>{item.description}</td>
                 <td>{item.model || '—'}</td>
                 <td>{item.color}</td>
                 <td>{item.size}</td>
@@ -161,6 +159,126 @@ function SellerProfileModal({ submission, onClose }) {
   );
 }
 
+/* ── Item Detail Modal ── */
+function ItemDetailModal({ row, onClose, onPriceSaved, onDeleted }) {
+  const [priceInput, setPriceInput] = useState(String(row.price ?? ''));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  async function handleSavePrice() {
+    const parsed = parseFloat(priceInput);
+    if (isNaN(parsed) || parsed < 0) { setError('Enter a valid price.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const docRef = doc(db, 'submissions', row._docId);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) return;
+      const freshItems = (snap.data().items || []).map((item, idx) =>
+        idx === row._itemIdx ? { ...item, price: parsed } : item
+      );
+      await updateDoc(docRef, { items: freshItems });
+      setSaved(true);
+      onPriceSaved(parsed);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error('Error saving price:', err);
+      setError('Failed to save. Try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fields = [
+    { label: 'Brand', value: row.brand || '—' },
+    { label: 'Description', value: row.description || '—' },
+    { label: 'Model', value: row.model || '—' },
+    { label: 'Color', value: row.color || '—' },
+    { label: 'Size', value: row.size || '—' },
+    { label: 'Category', value: row.category || '—' },
+    { label: 'BOEC Donation', value: row.donateToBoec ? 'Yes' : 'No' },
+    { label: 'Seller', value: row.sellerName || '—' },
+    { label: 'Accepted', value: row.accepted ? 'Yes' : 'No' },
+    { label: 'Sold', value: row.sold ? 'Yes' : 'No' },
+  ];
+
+  return (
+    <div className="seller-modal-overlay" onClick={onClose}>
+      <div className="seller-modal" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
+        <button className="seller-modal-close" onClick={onClose}>✕</button>
+
+        <div className="seller-modal-header">
+          <div className="seller-modal-name">{row.brand || 'Item'}</div>
+          <div style={{ fontSize: '0.95rem', color: 'var(--gray-600)' }}>{row.description}</div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px', marginBottom: 28 }}>
+          {fields.map(({ label, value }) => (
+            <div key={label}>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--gray-600)', marginBottom: 2 }}>{label}</div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ borderTop: 'var(--border)', paddingTop: 20 }}>
+          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--gray-600)', marginBottom: 8 }}>Price</div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: 12, color: 'var(--gray-600)', fontSize: '0.95rem' }}>$</span>
+              <input
+                className="form-input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={priceInput}
+                onChange={e => { setPriceInput(e.target.value); setError(''); setSaved(false); }}
+                style={{ paddingLeft: 24, width: 120 }}
+              />
+            </div>
+            <button className="btn btn-primary" onClick={handleSavePrice} disabled={saving}>
+              {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Price'}
+            </button>
+          </div>
+          {error && <p style={{ color: 'var(--red, #c0392b)', fontSize: '0.85rem', marginTop: 6 }}>{error}</p>}
+        </div>
+
+        <div style={{ borderTop: 'var(--border)', paddingTop: 20, marginTop: 20 }}>
+          <button
+            onClick={async () => {
+              if (!window.confirm(`Delete "${row.description}" (${row.brand}) from ${row.sellerName}? This cannot be undone.`)) return;
+              setDeleting(true);
+              try {
+                const docRef = doc(db, 'submissions', row._docId);
+                const snap = await getDoc(docRef);
+                if (!snap.exists()) return;
+                const freshItems = (snap.data().items || []).filter((_, idx) => idx !== row._itemIdx);
+                await updateDoc(docRef, { items: freshItems });
+                onDeleted();
+              } catch (err) {
+                console.error('Error deleting item:', err);
+                setDeleting(false);
+              }
+            }}
+            disabled={deleting}
+            style={{ padding: '8px 16px', fontWeight: 600, fontSize: '0.85rem', border: '1px solid var(--red, #c0392b)', borderRadius: 6, background: '#fff', color: 'var(--red, #c0392b)', cursor: 'pointer' }}
+          >
+            {deleting ? 'Deleting…' : 'Delete Item'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Item List Tab ── */
 function ItemListTab({ submissions, role }) {
   const [search, setSearch] = useState('');
@@ -168,6 +286,7 @@ function ItemListTab({ submissions, role }) {
   const [boecFilter, setBoecFilter] = useState('all');
   const [sellerFilter, setSellerFilter] = useState('all');
   const [profileSub, setProfileSub] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const allItems = useMemo(() => {
     const rows = [];
@@ -236,19 +355,6 @@ function ItemListTab({ submissions, role }) {
     }
   }
 
-  async function deleteItem(row) {
-    if (!window.confirm(`Delete "${row.description}" (${row.brand}) from ${row.sellerName}? This cannot be undone.`)) return;
-    try {
-      const docRef = doc(db, 'submissions', row._docId);
-      const snap = await getDoc(docRef);
-      if (!snap.exists()) return;
-      const freshItems = (snap.data().items || []).filter((_, idx) => idx !== row._itemIdx);
-      await updateDoc(docRef, { items: freshItems });
-    } catch (err) {
-      console.error('Error deleting item:', err);
-    }
-  }
-
   const openProfile = useCallback((docId) => {
     const sub = submissions.find(s => s.id === docId);
     if (sub) setProfileSub(sub);
@@ -258,6 +364,14 @@ function ItemListTab({ submissions, role }) {
     <div>
       {profileSub && (
         <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+      )}
+      {selectedItem && (
+        <ItemDetailModal
+          row={selectedItem}
+          onClose={() => setSelectedItem(null)}
+          onPriceSaved={(newPrice) => setSelectedItem(prev => ({ ...prev, price: newPrice }))}
+          onDeleted={() => setSelectedItem(null)}
+        />
       )}
 
       <div className="admin-controls">
@@ -300,9 +414,8 @@ function ItemListTab({ submissions, role }) {
             <thead>
               <tr>
                 <th>Accepted</th>
-                <th>Category</th>
-                <th>Description</th>
                 <th>Brand</th>
+                <th>Description</th>
                 <th>Model</th>
                 <th>Color</th>
                 <th>Size</th>
@@ -310,13 +423,17 @@ function ItemListTab({ submissions, role }) {
                 <th>BOEC</th>
                 <th>Seller</th>
                 <th>Sold</th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((row) => (
-                <tr key={`${row._docId}-${row._itemIdx}`} className={row.sold ? 'sold-row' : ''}>
-                  <td>
+                <tr
+                  key={`${row._docId}-${row._itemIdx}`}
+                  className={`${row.sold ? 'sold-row' : ''} clickable-row`}
+                  onClick={() => setSelectedItem(row)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <td onClick={e => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={!!row.accepted}
@@ -324,9 +441,8 @@ function ItemListTab({ submissions, role }) {
                       title={row.accepted ? 'Mark as not accepted' : 'Mark as accepted'}
                     />
                   </td>
-                  <td>{row.category}</td>
-                  <td>{row.description}</td>
                   <td>{row.brand}</td>
+                  <td>{row.description}</td>
                   <td>{row.model || '—'}</td>
                   <td>{row.color}</td>
                   <td>{row.size}</td>
@@ -336,27 +452,18 @@ function ItemListTab({ submissions, role }) {
                       ? <span className="boec-badge">Yes</span>
                       : <span style={{ color: 'var(--gray-400)' }}>No</span>}
                   </td>
-                  <td>
+                  <td onClick={e => e.stopPropagation()}>
                     <button className="seller-link" onClick={() => openProfile(row._docId)}>
                       {row.sellerName}
                     </button>
                   </td>
-                  <td>
+                  <td onClick={e => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={!!row.sold}
                       onChange={() => toggleSold(row)}
                       title={row.sold ? 'Mark as unsold' : 'Mark as sold'}
                     />
-                  </td>
-                  <td>
-                    <button
-                      className="btn-delete-item"
-                      onClick={() => deleteItem(row)}
-                      title="Delete item"
-                    >
-                      ✕
-                    </button>
                   </td>
                 </tr>
               ))}
