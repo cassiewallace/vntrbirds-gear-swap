@@ -29,7 +29,7 @@ export default function IntroPage() {
   const navigate = useNavigate();
   const [agreed, setAgreed] = useState(false);
   const [name, setName] = useState('');
-  const [eventSettings, setEventSettings] = useState({ eventDate: 'May 31, 2026', location: 'TBD', sellerPickup: '4:00–5:00pm' });
+  const [eventSettings, setEventSettings] = useState({ date: '', location: '', time: '' });
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   useEffect(() => {
@@ -70,21 +70,21 @@ export default function IntroPage() {
               <span className="pill-icon">📅</span>
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Date</div>
-                <div style={{ fontWeight: 700 }}>{eventSettings.eventDate}</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.date || 'TBD'}</div>
               </div>
             </div>
             <div className="info-pill">
               <span className="pill-icon">📍</span>
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Location</div>
-                <div style={{ fontWeight: 700 }}>{eventSettings.location}</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.location || 'TBD'}</div>
               </div>
             </div>
             <div className="info-pill">
               <span className="pill-icon">🕓</span>
               <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Seller Pickup</div>
-                <div style={{ fontWeight: 700 }}>{eventSettings.sellerPickup}</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Time</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.time || 'TBD'}</div>
               </div>
             </div>
           </div>

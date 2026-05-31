@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, getDoc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -464,20 +464,23 @@ function PayoutsTab({ submissions }) {
 
 /* ── Settings Tab ── */
 function SettingsTab() {
-  const [eventDate, setEventDate] = useState('');
+  const [season, setSeason] = useState('Summer');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
-  const [sellerPickup, setSellerPickup] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     async function load() {
       const snap = await getDoc(doc(db, 'settings', 'event'));
       if (snap.exists()) {
         const d = snap.data();
-        setEventDate(d.eventDate || '');
+        setSeason(d.season || 'Summer');
+        setDate(d.date || '');
+        setTime(d.time || '');
         setLocation(d.location || '');
-        setSellerPickup(d.sellerPickup || '');
       }
     }
     load();
@@ -486,7 +489,7 @@ function SettingsTab() {
   async function handleSave() {
     setSaving(true);
     try {
-      await setDoc(doc(db, 'settings', 'event'), { eventDate, location, sellerPickup });
+      await setDoc(doc(db, 'settings', 'event'), { season, date, time, location });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -496,32 +499,114 @@ function SettingsTab() {
     }
   }
 
+  async function handleClearAll() {
+    if (!window.confirm('Permanently delete ALL seller submissions? This cannot be undone.')) return;
+    setClearing(true);
+    try {
+      const snap = await getDocs(collection(db, 'submissions'));
+      const batch = writeBatch(db);
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    } catch (err) {
+      console.error('Error clearing submissions:', err);
+    } finally {
+      setClearing(false);
+    }
+  }
+
+  const rowStyle = { display: 'flex', alignItems: 'flex-start', gap: 24, padding: '20px 0', borderBottom: '1px solid var(--gray-200)' };
+  const labelColStyle = { flex: '0 0 160px', minWidth: 0 };
+  const controlColStyle = { flex: 1 };
+
   return (
-    <div style={{ maxWidth: 480, padding: '24px 0' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 4 }}>Event Settings</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--gray-600)' }}>These values appear on the seller sign-up page.</p>
+    <div style={{ maxWidth: 600, padding: '8px 0' }}>
+
+      {/* Season */}
+      <div style={rowStyle}>
+        <div style={labelColStyle}>
+          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Season</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Toggle between Summer and Winter gear swap mode.</div>
+        </div>
+        <div style={controlColStyle}>
+          <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--gray-200)', width: 'fit-content' }}>
+            {['Summer', 'Winter'].map(s => (
+              <button
+                key={s}
+                onClick={() => setSeason(s)}
+                style={{
+                  padding: '10px 20px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: season === s ? '#111' : '#fff',
+                  color: season === s ? '#fff' : '#111',
+                }}
+              >
+                {s === 'Summer' ? '☀️' : '❄️'} {s}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">Event Date</label>
-        <input className="form-input" type="text" value={eventDate} onChange={e => setEventDate(e.target.value)} placeholder="e.g. May 31, 2026" />
+
+      {/* Date */}
+      <div style={rowStyle}>
+        <div style={labelColStyle}>
+          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Date</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Shown on the intro page event info pill.</div>
+        </div>
+        <div style={controlColStyle}>
+          <input className="form-input" type="text" value={date} onChange={e => setDate(e.target.value)} placeholder="e.g. May 31" />
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">Location</label>
-        <input className="form-input" type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Breckenridge Recreation Center" />
+
+      {/* Time */}
+      <div style={rowStyle}>
+        <div style={labelColStyle}>
+          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Time</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Shown on the intro page event info pill.</div>
+        </div>
+        <div style={controlColStyle}>
+          <input className="form-input" type="text" value={time} onChange={e => setTime(e.target.value)} placeholder="e.g. 10am–5pm" />
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">Seller Pickup Time</label>
-        <input className="form-input" type="text" value={sellerPickup} onChange={e => setSellerPickup(e.target.value)} placeholder="e.g. 4:00–5:00pm" />
+
+      {/* Location */}
+      <div style={rowStyle}>
+        <div style={labelColStyle}>
+          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Location</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Shown on the intro page event info pill.</div>
+        </div>
+        <div style={controlColStyle}>
+          <input className="form-input" type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Breckenridge" />
+        </div>
       </div>
-      <button
-        className="btn btn-primary"
-        onClick={handleSave}
-        disabled={saving}
-        style={{ marginTop: 8 }}
-      >
-        {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Settings'}
-      </button>
+
+      {/* Save */}
+      <div style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-200)' }}>
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Settings'}
+        </button>
+      </div>
+
+      {/* Clear All Submissions */}
+      <div style={rowStyle}>
+        <div style={labelColStyle}>
+          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, color: 'var(--red, #c0392b)' }}>Clear All Submissions</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Permanently delete all seller submissions and item data.</div>
+        </div>
+        <div style={controlColStyle}>
+          <button
+            onClick={handleClearAll}
+            disabled={clearing}
+            style={{ padding: '10px 20px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid var(--red, #c0392b)', borderRadius: 8, background: '#fff', color: 'var(--red, #c0392b)', cursor: 'pointer' }}
+          >
+            {clearing ? 'Clearing…' : 'Clear All'}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }
