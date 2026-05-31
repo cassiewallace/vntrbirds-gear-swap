@@ -40,11 +40,6 @@ export default function SellerInfoPage() {
     <div className="page-wrapper">
       <HeaderLight />
       <main className="page-content">
-        <div className="progress-bar-wrapper">
-          {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`progress-step ${s < 2 ? 'completed' : s === 2 ? 'active' : ''}`} />
-          ))}
-        </div>
 
         <h1 className="section-title">Seller Info</h1>
         <p className="section-subtitle">All fields are required. Your Venmo is used to send your proceeds.</p>
@@ -105,14 +100,17 @@ export default function SellerInfoPage() {
             </div>
             <div className="form-group">
               <label className="form-label">Venmo Handle</label>
-              <input
-                type="text"
-                className={`form-input ${errors.venmo ? 'error' : ''}`}
-                value={sellerInfo.venmo}
-                onChange={e => handleChange('venmo', e.target.value)}
-                placeholder="@username"
-                autoComplete="off"
-              />
+              <div className={`input-prefix-wrapper ${errors.venmo ? 'error' : ''}`}>
+                <span className="input-prefix">@</span>
+                <input
+                  type="text"
+                  className="input-prefix-field"
+                  value={sellerInfo.venmo}
+                  onChange={e => handleChange('venmo', e.target.value.replace(/^@+/, ''))}
+                  placeholder="username"
+                  autoComplete="off"
+                />
+              </div>
               {errors.venmo && <p className="error-text">{errors.venmo}</p>}
             </div>
           </div>
@@ -125,6 +123,11 @@ export default function SellerInfoPage() {
           <button className="btn btn-primary" onClick={handleContinue}>
             Continue to Items →
           </button>
+        </div>
+        <div className="progress-bar-wrapper">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`progress-step ${s < 2 ? 'completed' : s === 2 ? 'active' : ''}`} />
+          ))}
         </div>
       </main>
     </div>

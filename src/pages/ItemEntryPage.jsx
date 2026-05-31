@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { useSubmission } from '../context/SubmissionContext';
 import { HeaderLight } from '../components/Header';
 
-const CATEGORIES = [
+const SUMMER_CATEGORIES = [
   'Hiking Gear',
   'Bike Gear',
   'Rock Climbing Gear',
@@ -18,7 +18,30 @@ const CATEGORIES = [
   'Free Bin',
 ];
 
-function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors }) {
+const WINTER_CATEGORIES = [
+  'Snowboards / Skis',
+  'Splitboards / AT Ski Setups',
+  'Cross Country Skis',
+  'Snowshoes',
+  'Poles',
+  'Bindings',
+  'Boots',
+  'Backcountry Gear',
+  'Shovels',
+  'Probes',
+  'Packs',
+  'Outerwear',
+  'Gloves / Mittens',
+  'Winter Clothing',
+  'Backpacks',
+  'Helmets',
+  'Goggles',
+  'Sunglasses',
+  'Dog Gear',
+  'Free Bin',
+];
+
+function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors, categories }) {
   return (
     <div className="item-card">
       <div className="item-card-header">
@@ -39,7 +62,7 @@ function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors }) {
             onChange={e => onUpdate('category', e.target.value)}
           >
             <option value="">Select category…</option>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           {errors?.category && <p className="error-text">{errors.category}</p>}
         </div>
@@ -141,6 +164,7 @@ export default function ItemEntryPage() {
   const [itemErrors, setItemErrors] = useState({});
   const [extraError, setExtraError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const categories = localStorage.getItem('gearswap_season') === 'winter' ? WINTER_CATEGORIES : SUMMER_CATEGORIES;
 
   function validateItems() {
     const errors = {};
@@ -212,11 +236,6 @@ export default function ItemEntryPage() {
     <div className="page-wrapper">
       <HeaderLight />
       <main className="page-content">
-        <div className="progress-bar-wrapper">
-          {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`progress-step ${s < 3 ? 'completed' : s === 3 ? 'active' : ''}`} />
-          ))}
-        </div>
 
         <h1 className="section-title">Your Items</h1>
         <p className="section-subtitle">Add all items you're bringing to the swap. At least one item is required.</p>
@@ -230,6 +249,7 @@ export default function ItemEntryPage() {
             onRemove={() => removeItem(item.id)}
             showRemove={items.length > 1}
             errors={itemErrors[item.id]}
+            categories={categories}
           />
         ))}
 
@@ -255,7 +275,10 @@ export default function ItemEntryPage() {
                 min="0"
                 max="60"
                 value={extraDonationPercent}
-                onChange={e => setExtraDonationPercent(e.target.value)}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '' || parseFloat(val) <= 60) setExtraDonationPercent(val);
+                }}
                 style={{ maxWidth: 120 }}
               />
               <span style={{ fontSize: '0.95rem', color: 'var(--gray-600)' }}>%</span>
@@ -276,6 +299,11 @@ export default function ItemEntryPage() {
           <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
             {submitting ? 'Submitting…' : 'Submit →'}
           </button>
+        </div>
+        <div className="progress-bar-wrapper">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`progress-step ${s < 3 ? 'completed' : s === 3 ? 'active' : ''}`} />
+          ))}
         </div>
       </main>
     </div>

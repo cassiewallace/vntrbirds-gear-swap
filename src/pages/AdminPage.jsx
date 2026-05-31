@@ -162,7 +162,7 @@ function DonorProfileModal({ submission, onClose }) {
 }
 
 /* ── Item List Tab ── */
-function ItemListTab({ submissions }) {
+function ItemListTab({ submissions, role }) {
   const [search, setSearch] = useState('');
   const [soldFilter, setSoldFilter] = useState('all');
   const [boecFilter, setBoecFilter] = useState('all');
@@ -212,6 +212,19 @@ function ItemListTab({ submissions }) {
       await updateDoc(docRef, { items: freshItems });
     } catch (err) {
       console.error('Error updating sold status:', err);
+    }
+  }
+
+  async function deleteItem(row) {
+    if (!window.confirm(`Delete "${row.description}" (${row.brand}) from ${row.donorName}? This cannot be undone.`)) return;
+    try {
+      const docRef = doc(db, 'submissions', row._docId);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) return;
+      const freshItems = (snap.data().items || []).filter((_, idx) => idx !== row._itemIdx);
+      await updateDoc(docRef, { items: freshItems });
+    } catch (err) {
+      console.error('Error deleting item:', err);
     }
   }
 
@@ -269,6 +282,7 @@ function ItemListTab({ submissions }) {
                 <th>BOEC</th>
                 <th>Price</th>
                 <th>Sold</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -298,6 +312,15 @@ function ItemListTab({ submissions }) {
                       onChange={() => toggleSold(row)}
                       title={row.sold ? 'Mark as unsold' : 'Mark as sold'}
                     />
+                  </td>
+                  <td>
+                    <button
+                      className="btn-delete-item"
+                      onClick={() => deleteItem(row)}
+                      title="Delete item"
+                    >
+                      ✕
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -691,7 +714,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
-            {activeTab === 'items' && <ItemListTab submissions={submissions} />}
+            {activeTab === 'items' && <ItemListTab submissions={submissions} role={role} />}
             {activeTab === 'payouts' && <PayoutsTab submissions={submissions} />}
           </>
         )}

@@ -6,23 +6,44 @@ import { HeaderLight } from '../components/Header';
 
 const PROVISIONS = [
   "40% of merchandise sales will go to the VNTRbirds scholarship fund (supporting women in the outdoors and furthering their outdoor education through mentorships and grants). If you'd like to donate more, please indicate at the bottom of your item list.",
-  "Compensation for SOLD goods not picked up before 4:45pm on the day of the sale will be Venmo'd to the address you provide.",
-  'Items that have NOT SOLD must be picked up between 4pm–5pm on the day of the event (the end of the swap). Items not picked up by that time will be donated to the Breckenridge Outdoor Education Center.',
+  "All sold items will be paid via Venmo to the handle you provide — you do NOT need to return to the event to receive payment.",
+  'Items that have NOT SOLD must be picked up between 4pm–5pm on the day of the event. You only need to return if you plan to pick up unsold items you do not wish to donate. Items not picked up by that time will be donated to the Breckenridge Outdoor Education Center.',
   'VNTRbirds and its volunteers CANNOT be held responsible for lost, damaged, or stolen merchandise.',
   'VNTRbirds WILL NOT provide compensation for lost, damaged, or stolen merchandise.',
 ];
 
-const CATEGORIES = [
+const SUMMER_CATEGORIES = [
   { name: 'Hiking Gear', items: ['Boots, apparel (pants, shorts, tech tees)', 'Packs, hiking poles'] },
   { name: 'Bike Gear', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Downhill goggles (no scratches/foam tears)', 'Packs'] },
-  { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes', 'Bouldering pads'] },
+  { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
   { name: 'Camping Gear', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags', 'Rain jackets'] },
   { name: 'Skateboards', items: [] },
   { name: 'Backpacks', items: [] },
-  { name: 'Helmets', items: ['No clear damage'] },
+  { name: 'Helmets', items: ['New helmets only — no used helmets'] },
   { name: 'Dog Gear', items: [] },
   { name: 'Apparel', items: ['Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers'] },
   { name: '"Free Bin"', items: ['Gently used socks, hats, tees, etc.'] },
+];
+
+const WINTER_CATEGORIES = [
+  { name: 'Snowboards / Skis', items: [] },
+  { name: 'Splitboards / AT Ski Setups', items: [] },
+  { name: 'Cross Country Skis', items: [] },
+  { name: 'Snowshoes', items: [] },
+  { name: 'Poles', items: [] },
+  { name: 'Bindings', items: [] },
+  { name: 'Boots', items: [] },
+  { name: 'Backcountry Gear', items: ['No electronics (e.g. transceivers)'] },
+  { name: 'Shovels', items: [] },
+  { name: 'Probes', items: [] },
+  { name: 'Packs', items: [] },
+  { name: 'Outerwear', items: ['Jackets', 'Snow pants', 'Gloves / Mittens'] },
+  { name: 'Winter Clothing', items: ['First layers', 'Hoodies', 'Jeans', 'Streetwear boots / shoes', 'Backpacks'] },
+  { name: 'Helmets', items: ['New helmets only — no used helmets'] },
+  { name: 'Goggles', items: ['Free of scratches and tears in foam'] },
+  { name: 'Sunglasses', items: [] },
+  { name: 'Dog Gear', items: [] },
+  { name: '"Free Bin"', items: ['Gently used socks, buffs, beanies, etc.'] },
 ];
 
 export default function IntroPage() {
@@ -31,6 +52,12 @@ export default function IntroPage() {
   const [name, setName] = useState('');
   const [eventSettings, setEventSettings] = useState({ date: '', location: '', time: '' });
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const isWinter = localStorage.getItem('gearswap_season') === 'winter';
+  const CATEGORIES = isWinter ? WINTER_CATEGORIES : SUMMER_CATEGORIES;
+  const eventDate = localStorage.getItem('gearswap_date') || '';
+  const eventTime = localStorage.getItem('gearswap_time') || '';
+  const eventDatetime = [eventDate, eventTime].filter(Boolean).join(' ') || 'TBD';
+  const eventLocation = localStorage.getItem('gearswap_location') || 'TBD';
 
   useEffect(() => {
     async function loadSettings() {
@@ -52,19 +79,9 @@ export default function IntroPage() {
     <div className="page-wrapper">
       <HeaderLight />
       <main className="page-content">
-        <div className="progress-bar-wrapper">
-          {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`progress-step ${s === 1 ? 'active' : ''}`} />
-          ))}
-        </div>
 
         {/* Event Info */}
-        <div className="card">
-          <p style={{ fontSize: '1rem', lineHeight: 1.75, marginBottom: 24, color: 'var(--gray-600)' }}>
-            VNTRbirds is a women's outdoor company based in Breckenridge, CO. Our Gear Swap+Sale
-            is a community event to buy and sell used gear — keeping costs low and quality equipment in circulation.
-          </p>
-
+        <div className="card" style={{ border: 'none', paddingLeft: 0, paddingRight: 0 }}>
           <div className="info-row">
             <div className="info-pill">
               <span className="pill-icon">📅</span>
@@ -98,10 +115,10 @@ export default function IntroPage() {
         {/* Accepted Items */}
         <div className="card">
           <div className="card-label">What we accept</div>
-          <div className="card-title">Accepted Items</div>
+          <div className="card-title">{isWinter ? 'Winter Items' : 'Summer Items'}</div>
 
           <div className="info-block" style={{ marginBottom: 0 }}>
-            <p><strong>All items must be new or gently used — clean, no tears or damage. Summer-specific items only.</strong></p>
+            <p>All items must be new or gently used — clean, no tears or damage.</p>
           </div>
 
           <div className="category-grid">
@@ -115,6 +132,7 @@ export default function IntroPage() {
                 )}
               </div>
             ))}
+            {CATEGORIES.length % 2 !== 0 && <div className="category-tag" />}
           </div>
 
           <p style={{ fontSize: '0.9rem', color: 'var(--gray-600)' }}>
@@ -129,13 +147,13 @@ export default function IntroPage() {
           <div className="card-title">How It Works</div>
 
           <div className="warning-block">
-            <p><strong>Sold items:</strong> 60% of your sold proceeds will be Venmo'd to you by end of day.</p>
+            <p><span style={{ fontWeight: 500 }}>Sold items:</span> 60% of your sold proceeds will be Venmo'd to you — you do not need to return to receive payment.</p>
           </div>
           <div className="warning-block">
-            <p><strong>Unsold items:</strong> Must be picked up between 4–5pm. Unclaimed items are donated to the Breckenridge Outdoor Education Center (BOEC).</p>
+            <p><span style={{ fontWeight: 500 }}>Unsold items:</span> Only return if you plan to pick up items you don't want to donate. Pickup is 4–5pm; unclaimed items go to the Breckenridge Outdoor Education Center (BOEC).</p>
           </div>
           <div className="warning-block" style={{ marginBottom: 0 }}>
-            <p><strong>Liability:</strong> VNTRbirds cannot be held responsible for lost, damaged, or stolen items and will not provide compensation.</p>
+            <p><span style={{ fontWeight: 500 }}>Liability:</span> VNTRbirds cannot be held responsible for lost, damaged, or stolen items and will not provide compensation.</p>
           </div>
         </div>
 
@@ -200,6 +218,11 @@ export default function IntroPage() {
           >
             I Agree — Continue to Seller Info →
           </button>
+        </div>
+        <div className="progress-bar-wrapper">
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`progress-step ${s === 1 ? 'active' : ''}`} />
+          ))}
         </div>
       </main>
     </div>

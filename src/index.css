@@ -1251,6 +1251,23 @@ h4, h5, h6 {
   color: var(--dark);
 }
 
+.btn-delete-item {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  color: var(--gray-400);
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+.btn-delete-item:hover {
+  color: #e53e3e;
+  background: #fff5f5;
+}
+
 /* ── Donor Profile Modal ── */
 .donor-modal-overlay {
   position: fixed;
