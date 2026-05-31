@@ -136,6 +136,7 @@ function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors, categor
             step="0.01"
             value={item.price}
             onChange={e => onUpdate('price', e.target.value)}
+            onWheel={e => e.target.blur()}
           />
           {errors?.price && <p className="error-text">{errors.price}</p>}
         </div>

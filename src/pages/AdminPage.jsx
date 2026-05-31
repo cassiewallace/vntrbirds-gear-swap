@@ -280,7 +280,7 @@ function ItemDetailModal({ row, onClose, onPriceSaved, onDeleted }) {
 }
 
 /* ── Bag Modal ── */
-function BagModal({ bagItems, onClose, onDone }) {
+function BagModal({ bagItems, onClose, onDone, onRemove }) {
   const [saving, setSaving] = useState(false);
   const total = bagItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
@@ -336,6 +336,7 @@ function BagModal({ bagItems, onClose, onDone }) {
                     <th>Description</th>
                     <th>Size</th>
                     <th>Price</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -345,6 +346,9 @@ function BagModal({ bagItems, onClose, onDone }) {
                       <td>{item.description || '—'}</td>
                       <td>{item.size || '—'}</td>
                       <td>${fmt(item.price || 0)}</td>
+                      <td>
+                        <button className="btn-delete-item" onClick={() => onRemove(item)} title="Remove from bag">✕</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -897,6 +901,7 @@ export default function AdminPage() {
           bagItems={bagItems}
           onClose={() => setBagOpen(false)}
           onDone={() => { setBagItems([]); setBagOpen(false); }}
+          onRemove={(item) => setBagItems(prev => prev.filter(b => `${b._docId}-${b._itemIdx}` !== `${item._docId}-${item._itemIdx}`))}
         />
       )}
       <header className="admin-header">
