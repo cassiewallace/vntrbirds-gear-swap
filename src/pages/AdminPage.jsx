@@ -400,10 +400,6 @@ function ItemListTab({ submissions, role }) {
         </select>
       </div>
 
-      <div style={{ fontSize: '0.85rem', color: 'var(--gray-600)', marginBottom: 12 }}>
-        Showing {filtered.length} of {allItems.length} items
-      </div>
-
       {filtered.length === 0 ? (
         <div className="empty-state">
           <p>No items match your filters.</p>
