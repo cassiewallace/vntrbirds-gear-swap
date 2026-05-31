@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "vntrbirds-gear-swap"
+  },
   "targets": {},
   "etags": {}
 }
