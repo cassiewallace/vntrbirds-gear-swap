@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -462,6 +462,70 @@ function PayoutsTab({ submissions }) {
   );
 }
 
+/* ── Settings Tab ── */
+function SettingsTab() {
+  const [eventDate, setEventDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [sellerPickup, setSellerPickup] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const snap = await getDoc(doc(db, 'settings', 'event'));
+      if (snap.exists()) {
+        const d = snap.data();
+        setEventDate(d.eventDate || '');
+        setLocation(d.location || '');
+        setSellerPickup(d.sellerPickup || '');
+      }
+    }
+    load();
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'settings', 'event'), { eventDate, location, sellerPickup });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div style={{ maxWidth: 480, padding: '24px 0' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 4 }}>Event Settings</h2>
+        <p style={{ fontSize: '0.85rem', color: 'var(--gray-600)' }}>These values appear on the seller sign-up page.</p>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Event Date</label>
+        <input className="form-input" type="text" value={eventDate} onChange={e => setEventDate(e.target.value)} placeholder="e.g. May 31, 2026" />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Location</label>
+        <input className="form-input" type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Breckenridge Recreation Center" />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Seller Pickup Time</label>
+        <input className="form-input" type="text" value={sellerPickup} onChange={e => setSellerPickup(e.target.value)} placeholder="e.g. 4:00–5:00pm" />
+      </div>
+      <button
+        className="btn btn-primary"
+        onClick={handleSave}
+        disabled={saving}
+        style={{ marginTop: 8 }}
+      >
+        {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Settings'}
+      </button>
+    </div>
+  );
+}
+
 /* ── Main Admin Page ── */
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -524,9 +588,19 @@ export default function AdminPage() {
           >
             Payouts
           </button>
+          {role === 'admin' && (
+            <button
+              className={`admin-tab ${activeTab === 'settings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('settings')}
+            >
+              Settings
+            </button>
+          )}
         </div>
 
-        {loading ? (
+        {activeTab === 'settings' ? (
+          <SettingsTab />
+        ) : loading ? (
           <div className="empty-state">
             <p>Loading submissions…</p>
           </div>

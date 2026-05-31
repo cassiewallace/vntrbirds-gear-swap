@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { HeaderLight } from '../components/Header';
 
 const PROVISIONS = [
@@ -27,7 +29,22 @@ export default function IntroPage() {
   const navigate = useNavigate();
   const [agreed, setAgreed] = useState(false);
   const [name, setName] = useState('');
+  const [eventSettings, setEventSettings] = useState({ eventDate: 'May 31, 2026', location: 'TBD', sellerPickup: '4:00–5:00pm' });
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'event'));
+        if (snap.exists()) {
+          setEventSettings(prev => ({ ...prev, ...snap.data() }));
+        }
+      } catch (err) {
+        console.error('Error loading event settings:', err);
+      }
+    }
+    loadSettings();
+  }, []);
 
   const canProceed = agreed && name.trim().length > 0;
 
@@ -53,21 +70,21 @@ export default function IntroPage() {
               <span className="pill-icon">📅</span>
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Date</div>
-                <div style={{ fontWeight: 700 }}>May 31, 2026</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.eventDate}</div>
               </div>
             </div>
             <div className="info-pill">
               <span className="pill-icon">📍</span>
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Location</div>
-                <div style={{ fontWeight: 700 }}>TBD</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.location}</div>
               </div>
             </div>
             <div className="info-pill">
               <span className="pill-icon">🕓</span>
               <div>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gray-600)', marginBottom: 2 }}>Seller Pickup</div>
-                <div style={{ fontWeight: 700 }}>4:00–5:00pm</div>
+                <div style={{ fontWeight: 700 }}>{eventSettings.sellerPickup}</div>
               </div>
             </div>
           </div>
