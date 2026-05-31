@@ -279,8 +279,96 @@ function ItemDetailModal({ row, onClose, onPriceSaved, onDeleted }) {
   );
 }
 
+/* ── Bag Modal ── */
+function BagModal({ bagItems, onClose, onDone }) {
+  const [saving, setSaving] = useState(false);
+  const total = bagItems.reduce((sum, item) => sum + (item.price || 0), 0);
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  async function handleDone() {
+    setSaving(true);
+    try {
+      const byDoc = {};
+      bagItems.forEach(item => {
+        if (!byDoc[item._docId]) byDoc[item._docId] = [];
+        byDoc[item._docId].push(item._itemIdx);
+      });
+      await Promise.all(Object.entries(byDoc).map(async ([docId, idxs]) => {
+        const docRef = doc(db, 'submissions', docId);
+        const snap = await getDoc(docRef);
+        if (!snap.exists()) return;
+        const freshItems = (snap.data().items || []).map((item, idx) =>
+          idxs.includes(idx) ? { ...item, sold: true } : item
+        );
+        await updateDoc(docRef, { items: freshItems });
+      }));
+      onDone();
+    } catch (err) {
+      console.error('Error marking bag items as sold:', err);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="seller-modal-overlay" onClick={onClose}>
+      <div className="seller-modal" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+        <button className="seller-modal-close" onClick={onClose}>✕</button>
+
+        <div className="seller-modal-header">
+          <div className="seller-modal-name">Bag</div>
+          <div style={{ fontSize: '0.92rem', color: 'var(--gray-600)' }}>{bagItems.length} item{bagItems.length !== 1 ? 's' : ''}</div>
+        </div>
+
+        {bagItems.length === 0 ? (
+          <p style={{ color: 'var(--gray-600)', fontSize: '0.95rem' }}>No items in the bag.</p>
+        ) : (
+          <>
+            <div style={{ overflowX: 'auto', marginBottom: 24 }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Brand</th>
+                    <th>Description</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bagItems.map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.brand || '—'}</td>
+                      <td>{item.description || '—'}</td>
+                      <td>{item.size || '—'}</td>
+                      <td>${fmt(item.price || 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: 'var(--border)', paddingTop: 20 }}>
+              <div>
+                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--gray-600)', marginBottom: 2 }}>Total</div>
+                <div style={{ fontFamily: "'Lequire', sans-serif", fontSize: '1.6rem' }}>${fmt(total)}</div>
+              </div>
+              <button className="btn btn-primary" onClick={handleDone} disabled={saving} style={{ padding: '12px 32px', fontSize: '1rem' }}>
+                {saving ? 'Saving…' : 'Done'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Item List Tab ── */
-function ItemListTab({ submissions, role }) {
+function ItemListTab({ submissions, role, bagItems, setBagItems }) {
   const [search, setSearch] = useState('');
   const [soldFilter, setSoldFilter] = useState('all');
   const [boecFilter, setBoecFilter] = useState('all');
@@ -395,6 +483,7 @@ function ItemListTab({ submissions, role }) {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Bag</th>
                 <th>Seller</th>
                 <th>Brand</th>
                 <th>Description</th>
@@ -407,13 +496,30 @@ function ItemListTab({ submissions, role }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row) => (
+              {filtered.map((row) => {
+                const bagKey = `${row._docId}-${row._itemIdx}`;
+                const inBag = bagItems.some(b => `${b._docId}-${b._itemIdx}` === bagKey);
+                return (
                 <tr
-                  key={`${row._docId}-${row._itemIdx}`}
+                  key={bagKey}
                   className={`${row.sold ? 'sold-row' : ''} clickable-row`}
                   onClick={() => setSelectedItem(row)}
                   style={{ cursor: 'pointer' }}
                 >
+                  <td onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={inBag}
+                      onChange={() => {
+                        setBagItems(prev =>
+                          inBag
+                            ? prev.filter(b => `${b._docId}-${b._itemIdx}` !== bagKey)
+                            : [...prev, row]
+                        );
+                      }}
+                      title={inBag ? 'Remove from bag' : 'Add to bag'}
+                    />
+                  </td>
                   <td onClick={e => e.stopPropagation()}>
                     <button className="seller-link" onClick={() => openProfile(row._docId)}>
                       {row.sellerName}
@@ -439,7 +545,8 @@ function ItemListTab({ submissions, role }) {
                     />
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -762,6 +869,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('items');
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [bagItems, setBagItems] = useState([]);
+  const [bagOpen, setBagOpen] = useState(false);
 
   useEffect(() => {
     if (!authenticated) return;
@@ -783,9 +892,21 @@ export default function AdminPage() {
 
   return (
     <div className="admin-wrapper">
+      {bagOpen && (
+        <BagModal
+          bagItems={bagItems}
+          onClose={() => setBagOpen(false)}
+          onDone={() => { setBagItems([]); setBagOpen(false); }}
+        />
+      )}
       <header className="admin-header">
         <div className="logo-text">VNTR<span>birds</span> Gear Swap</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {bagItems.length > 0 && (
+            <button className="bag-button" onClick={() => setBagOpen(true)}>
+              Bag ({bagItems.length})
+            </button>
+          )}
           <span className="admin-badge">{role === 'admin' ? 'Admin' : 'Volunteer'}</span>
         </div>
       </header>
@@ -822,7 +943,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
-            {activeTab === 'items' && <ItemListTab submissions={submissions} role={role} />}
+            {activeTab === 'items' && <ItemListTab submissions={submissions} role={role} bagItems={bagItems} setBagItems={setBagItems} />}
             {activeTab === 'payouts' && <PayoutsTab submissions={submissions} />}
           </>
         )}

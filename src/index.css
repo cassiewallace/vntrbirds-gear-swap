@@ -824,6 +824,23 @@ h4, h5, h6 {
   padding: 5px 12px;
 }
 
+.bag-button {
+  background: var(--teal);
+  color: var(--white);
+  border: none;
+  font-size: 0.78rem;
+  font-weight: normal;
+  font-family: 'Lequire', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.bag-button:hover {
+  opacity: 0.88;
+}
+
 .admin-settings-btn {
   background: none;
   border: none;
