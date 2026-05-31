@@ -653,12 +653,12 @@ function SettingsTab() {
     }
   }
 
-  const rowStyle = { display: 'flex', alignItems: 'flex-start', gap: 24, padding: '20px 0', borderBottom: '1px solid var(--gray-200)' };
-  const labelColStyle = { flex: '0 0 160px', minWidth: 0 };
+  const rowStyle = { display: 'flex', alignItems: 'flex-start', gap: 32, padding: '32px 0', borderBottom: '1px solid var(--gray-200)' };
+  const labelColStyle = { flex: '0 0 180px', minWidth: 0 };
   const controlColStyle = { flex: 1 };
 
   return (
-    <div style={{ maxWidth: 600, padding: '20px 16px' }}>
+    <div style={{ maxWidth: 640, padding: '32px 24px' }}>
 
       {/* Season */}
       <div style={rowStyle}>
@@ -723,7 +723,7 @@ function SettingsTab() {
       </div>
 
       {/* Save */}
-      <div style={{ padding: '20px 0', borderBottom: '1px solid var(--gray-200)' }}>
+      <div style={{ padding: '32px 0', borderBottom: '1px solid var(--gray-200)' }}>
         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
           {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Settings'}
         </button>
