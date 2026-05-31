@@ -307,8 +307,8 @@ function ItemListTab({ submissions, role }) {
                 <th>Color</th>
                 <th>Size</th>
                 <th>Price</th>
-                <th>Seller</th>
                 <th>BOEC</th>
+                <th>Seller</th>
                 <th>Sold</th>
                 <th></th>
               </tr>
@@ -332,14 +332,14 @@ function ItemListTab({ submissions, role }) {
                   <td>{row.size}</td>
                   <td>${fmt(row.price || 0)}</td>
                   <td>
-                    <button className="seller-link" onClick={() => openProfile(row._docId)}>
-                      {row.sellerName}
-                    </button>
-                  </td>
-                  <td>
                     {row.donateToBoec
                       ? <span className="boec-badge">Yes</span>
                       : <span style={{ color: 'var(--gray-400)' }}>No</span>}
+                  </td>
+                  <td>
+                    <button className="seller-link" onClick={() => openProfile(row._docId)}>
+                      {row.sellerName}
+                    </button>
                   </td>
                   <td>
                     <input
