@@ -67,13 +67,21 @@ function LoginScreen({ onLogin }) {
 }
 
 /* ── Seller Profile Modal ── */
-function SellerProfileModal({ submission, onClose }) {
+function SellerProfileModal({ submission, onClose, role }) {
   const items = submission.items || [];
   const soldItems = items.filter(i => i.sold);
   const totalListed = items.reduce((s, i) => s + (i.price || 0), 0);
   const totalSold = soldItems.reduce((s, i) => s + (i.price || 0), 0);
+
+  const defaultBoecPct = 40;
+  const [boecPct, setBoecPct] = useState(submission.customBoecPercent ?? defaultBoecPct);
+  const [boecInput, setBoecInput] = useState(String(submission.customBoecPercent ?? defaultBoecPct));
+  const [boecEditing, setBoecEditing] = useState(false);
+  const [boecSaving, setBoecSaving] = useState(false);
+  const [boecError, setBoecError] = useState('');
+
   const extraPct = submission.extraDonationPercent || 0;
-  const sellerPct = (60 - extraPct) / 100;
+  const sellerPct = (100 - boecPct - extraPct) / 100;
   const payout = totalSold * sellerPct;
 
   useEffect(() => {
@@ -81,6 +89,26 @@ function SellerProfileModal({ submission, onClose }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  async function saveBoecPct() {
+    const parsed = parseFloat(boecInput);
+    if (isNaN(parsed) || parsed < 0 || parsed > 100) {
+      setBoecError('Enter a value 0–100.');
+      return;
+    }
+    setBoecSaving(true);
+    setBoecError('');
+    try {
+      await updateDoc(doc(db, 'submissions', submission.id), { customBoecPercent: parsed });
+      setBoecPct(parsed);
+      setBoecEditing(false);
+    } catch (err) {
+      console.error('Error saving BOEC %:', err);
+      setBoecError('Failed to save.');
+    } finally {
+      setBoecSaving(false);
+    }
+  }
 
   return (
     <div className="seller-modal-overlay" onClick={onClose}>
@@ -106,6 +134,46 @@ function SellerProfileModal({ submission, onClose }) {
                 ? ` on ${submission.agreementTimestamp.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
                 : ''}
             </span>
+          </div>
+
+          {/* BOEC % row */}
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.88rem' }}>
+            <span style={{ color: 'var(--gray-500)', fontWeight: 500 }}>BOEC %:</span>
+            {boecEditing ? (
+              <>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={boecInput}
+                  onChange={e => { setBoecInput(e.target.value); setBoecError(''); }}
+                  onKeyDown={e => { if (e.key === 'Enter') saveBoecPct(); if (e.key === 'Escape') { setBoecEditing(false); setBoecInput(String(boecPct)); } }}
+                  style={{ width: 64, padding: '2px 6px', fontSize: '0.88rem', borderRadius: 4, border: '1px solid var(--gray-300)' }}
+                  autoFocus
+                />
+                <span style={{ color: 'var(--gray-500)' }}>%</span>
+                <button onClick={saveBoecPct} disabled={boecSaving} style={{ fontSize: '0.8rem', padding: '2px 10px', borderRadius: 4, background: 'var(--teal)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                  {boecSaving ? '…' : 'Save'}
+                </button>
+                <button onClick={() => { setBoecEditing(false); setBoecInput(String(boecPct)); setBoecError(''); }} style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: 4, background: 'var(--gray-200)', border: 'none', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+                {boecError && <span style={{ color: 'red', fontSize: '0.78rem' }}>{boecError}</span>}
+              </>
+            ) : (
+              <>
+                <span style={{ fontWeight: 600 }}>{boecPct}%</span>
+                {submission.customBoecPercent != null && submission.customBoecPercent !== defaultBoecPct && (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--blue)', background: 'var(--blue-light, #e8f0fe)', padding: '1px 6px', borderRadius: 10 }}>custom</span>
+                )}
+                {role === 'admin' && (
+                  <button onClick={() => setBoecEditing(true)} style={{ fontSize: '0.78rem', padding: '2px 8px', borderRadius: 4, background: 'var(--gray-200)', border: 'none', cursor: 'pointer' }}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -441,7 +509,7 @@ function ItemListTab({ submissions, role, bagItems, setBagItems }) {
   return (
     <div>
       {profileSub && (
-        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} role={role} />
       )}
       {selectedItem && (
         <ItemDetailModal
@@ -560,7 +628,7 @@ function ItemListTab({ submissions, role, bagItems, setBagItems }) {
 }
 
 /* ── Payouts Tab ── */
-function PayoutsTab({ submissions }) {
+function PayoutsTab({ submissions, role }) {
   const [paidMap, setPaidMap] = useState({});
   const [paidSort, setPaidSort] = useState(null);
   const [profileSub, setProfileSub] = useState(null);
@@ -582,7 +650,8 @@ function PayoutsTab({ submissions }) {
       const soldItems = (sub.items || []).filter(item => item.sold);
       const totalSold = soldItems.reduce((sum, item) => sum + (item.price || 0), 0);
       const extraPct = sub.extraDonationPercent || 0;
-      const sellerPct = (60 - extraPct) / 100;
+      const boecBasePct = sub.customBoecPercent ?? 40;
+      const sellerPct = (100 - boecBasePct - extraPct) / 100;
       const owedToSeller = totalSold * sellerPct;
       return {
         id: sub.id,
@@ -590,7 +659,7 @@ function PayoutsTab({ submissions }) {
         venmo: sub.venmo,
         totalSold,
         owedToSeller,
-        sellerPct: Math.round((1 - (40 + extraPct) / 100) * 100),
+        sellerPct: Math.round(sellerPct * 100),
       };
     }).filter(d => d.totalSold > 0);
   }, [submissions]);
@@ -632,7 +701,7 @@ function PayoutsTab({ submissions }) {
       </div>
 
       {profileSub && (
-        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} role={role} />
       )}
 
       <div className="admin-controls" style={{ marginBottom: 16 }}>
@@ -949,7 +1018,7 @@ export default function AdminPage() {
         ) : (
           <>
             {activeTab === 'items' && <ItemListTab submissions={submissions} role={role} bagItems={bagItems} setBagItems={setBagItems} />}
-            {activeTab === 'payouts' && <PayoutsTab submissions={submissions} />}
+            {activeTab === 'payouts' && <PayoutsTab submissions={submissions} role={role} />}
           </>
         )}
       </div>
