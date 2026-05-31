@@ -104,7 +104,7 @@ h4, h5, h6 {
   border-bottom: 3px solid var(--teal);
 }
 
-/* ── Light header (donor-facing) ── */
+/* ── Light header (seller-facing) ── */
 .site-header-light {
   background: var(--white);
   padding: 20px 32px;
@@ -941,7 +941,7 @@ h4, h5, h6 {
 
 .admin-content {
   flex: 1;
-  padding: 28px;
+  padding: 28px 8px;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -1232,8 +1232,8 @@ h4, h5, h6 {
   }
 }
 
-/* ── Donor Link ── */
-.donor-link {
+/* ── Seller Link ── */
+.seller-link {
   background: none;
   border: none;
   padding: 0;
@@ -1247,7 +1247,7 @@ h4, h5, h6 {
   white-space: nowrap;
 }
 
-.donor-link:hover {
+.seller-link:hover {
   color: var(--dark);
 }
 
@@ -1268,8 +1268,8 @@ h4, h5, h6 {
   background: #fff5f5;
 }
 
-/* ── Donor Profile Modal ── */
-.donor-modal-overlay {
+/* ── Seller Profile Modal ── */
+.seller-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
@@ -1281,7 +1281,7 @@ h4, h5, h6 {
   overflow-y: auto;
 }
 
-.donor-modal {
+.seller-modal {
   background: var(--white);
   border: var(--border);
   width: 100%;
@@ -1292,12 +1292,12 @@ h4, h5, h6 {
 }
 
 @media (max-width: 600px) {
-  .donor-modal {
+  .seller-modal {
     padding: 24px 16px;
   }
 }
 
-.donor-modal-close {
+.seller-modal-close {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -1310,17 +1310,17 @@ h4, h5, h6 {
   padding: 4px 8px;
 }
 
-.donor-modal-close:hover {
+.seller-modal-close:hover {
   color: var(--dark);
 }
 
-.donor-modal-header {
+.seller-modal-header {
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: var(--border);
 }
 
-.donor-modal-name {
+.seller-modal-name {
   font-family: 'Lequire', sans-serif;
   font-size: 1.4rem;
   font-weight: normal;
@@ -1330,7 +1330,7 @@ h4, h5, h6 {
   margin-bottom: 10px;
 }
 
-.donor-modal-meta {
+.seller-modal-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
@@ -1338,14 +1338,14 @@ h4, h5, h6 {
   color: var(--gray-600);
 }
 
-.donor-modal-stats {
+.seller-modal-stats {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 24px;
 }
 
-.donor-stat {
+.seller-stat {
   flex: 1;
   min-width: 120px;
   padding: 14px 16px;
@@ -1353,17 +1353,17 @@ h4, h5, h6 {
   background: var(--gray-50);
 }
 
-.donor-stat.highlight {
+.seller-stat.highlight {
   border-color: var(--teal);
   background: #f0fafa;
 }
 
-.donor-stat.teal {
+.seller-stat.teal {
   border-color: var(--teal);
   background: #e6f7f7;
 }
 
-.donor-stat-label {
+.seller-stat-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -1371,7 +1371,7 @@ h4, h5, h6 {
   margin-bottom: 4px;
 }
 
-.donor-stat-value {
+.seller-stat-value {
   font-family: 'Lequire', sans-serif;
   font-size: 1.3rem;
   font-weight: normal;

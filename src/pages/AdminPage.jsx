@@ -66,8 +66,8 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-/* ── Donor Profile Modal ── */
-function DonorProfileModal({ submission, onClose }) {
+/* ── Seller Profile Modal ── */
+function SellerProfileModal({ submission, onClose }) {
   const items = submission.items || [];
   const soldItems = items.filter(i => i.sold);
   const totalListed = items.reduce((s, i) => s + (i.price || 0), 0);
@@ -83,13 +83,13 @@ function DonorProfileModal({ submission, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="donor-modal-overlay" onClick={onClose}>
-      <div className="donor-modal" onClick={e => e.stopPropagation()}>
-        <button className="donor-modal-close" onClick={onClose}>✕</button>
+    <div className="seller-modal-overlay" onClick={onClose}>
+      <div className="seller-modal" onClick={e => e.stopPropagation()}>
+        <button className="seller-modal-close" onClick={onClose}>✕</button>
 
-        <div className="donor-modal-header">
-          <div className="donor-modal-name">{submission.firstName} {submission.lastName}</div>
-          <div className="donor-modal-meta">
+        <div className="seller-modal-header">
+          <div className="seller-modal-name">{submission.firstName} {submission.lastName}</div>
+          <div className="seller-modal-meta">
             {submission.email && <span>✉ {submission.email}</span>}
             {submission.phone && <span>📞 {submission.phone}</span>}
             {submission.venmo && (
@@ -109,18 +109,18 @@ function DonorProfileModal({ submission, onClose }) {
           </div>
         </div>
 
-        <div className="donor-modal-stats">
-          <div className="donor-stat">
-            <div className="donor-stat-label">Items Sold</div>
-            <div className="donor-stat-value">{soldItems.length} / {items.length}</div>
+        <div className="seller-modal-stats">
+          <div className="seller-stat">
+            <div className="seller-stat-label">Items Sold</div>
+            <div className="seller-stat-value">{soldItems.length} / {items.length}</div>
           </div>
-          <div className="donor-stat highlight">
-            <div className="donor-stat-label">Total Sold</div>
-            <div className="donor-stat-value">${fmt(totalSold)}</div>
+          <div className="seller-stat highlight">
+            <div className="seller-stat-label">Total Sold</div>
+            <div className="seller-stat-value">${fmt(totalSold)}</div>
           </div>
-          <div className="donor-stat teal">
-            <div className="donor-stat-label">Payout ({Math.round(sellerPct * 100)}%)</div>
-            <div className="donor-stat-value">${fmt(payout)}</div>
+          <div className="seller-stat teal">
+            <div className="seller-stat-label">Payout ({Math.round(sellerPct * 100)}%)</div>
+            <div className="seller-stat-value">${fmt(payout)}</div>
           </div>
         </div>
 
@@ -166,6 +166,7 @@ function ItemListTab({ submissions, role }) {
   const [search, setSearch] = useState('');
   const [soldFilter, setSoldFilter] = useState('all');
   const [boecFilter, setBoecFilter] = useState('all');
+  const [sellerFilter, setSellerFilter] = useState('all');
   const [profileSub, setProfileSub] = useState(null);
 
   const allItems = useMemo(() => {
@@ -176,15 +177,20 @@ function ItemListTab({ submissions, role }) {
           ...item,
           _docId: sub.id,
           _itemIdx: idx,
-          donorName: `${sub.firstName} ${sub.lastName}`,
-          donorEmail: sub.email,
-          donorPhone: sub.phone,
-          donorVenmo: sub.venmo,
+          sellerName: `${sub.firstName} ${sub.lastName}`,
+          sellerEmail: sub.email,
+          sellerPhone: sub.phone,
+          sellerVenmo: sub.venmo,
         });
       });
     });
     return rows;
   }, [submissions]);
+
+  const sellerNames = useMemo(() => {
+    const names = [...new Set(allItems.map(row => row.sellerName))];
+    return names.sort();
+  }, [allItems]);
 
   const filtered = useMemo(() => {
     return allItems.filter(row => {
@@ -192,14 +198,15 @@ function ItemListTab({ submissions, role }) {
       if (soldFilter === 'unsold' && row.sold) return false;
       if (boecFilter === 'yes' && !row.donateToBoec) return false;
       if (boecFilter === 'no' && row.donateToBoec) return false;
+      if (sellerFilter !== 'all' && row.sellerName !== sellerFilter) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        const fields = [row.donorName, row.donorEmail, row.donorPhone, row.donorVenmo, row.category, row.description, row.brand, row.model, row.color, row.size];
+        const fields = [row.sellerName, row.sellerEmail, row.sellerPhone, row.sellerVenmo, row.category, row.description, row.brand, row.model, row.color, row.size];
         if (!fields.some(f => (f || '').toLowerCase().includes(q))) return false;
       }
       return true;
     });
-  }, [allItems, search, soldFilter, boecFilter]);
+  }, [allItems, search, soldFilter, boecFilter, sellerFilter]);
 
   async function toggleAccepted(row) {
     try {
@@ -230,7 +237,7 @@ function ItemListTab({ submissions, role }) {
   }
 
   async function deleteItem(row) {
-    if (!window.confirm(`Delete "${row.description}" (${row.brand}) from ${row.donorName}? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete "${row.description}" (${row.brand}) from ${row.sellerName}? This cannot be undone.`)) return;
     try {
       const docRef = doc(db, 'submissions', row._docId);
       const snap = await getDoc(docRef);
@@ -250,7 +257,7 @@ function ItemListTab({ submissions, role }) {
   return (
     <div>
       {profileSub && (
-        <DonorProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
       )}
 
       <div className="admin-controls">
@@ -270,6 +277,12 @@ function ItemListTab({ submissions, role }) {
           <option value="all">All BOEC</option>
           <option value="yes">BOEC: Yes</option>
           <option value="no">BOEC: No</option>
+        </select>
+        <select className="admin-filter" value={sellerFilter} onChange={e => setSellerFilter(e.target.value)}>
+          <option value="all">All Sellers</option>
+          {sellerNames.map(name => (
+            <option key={name} value={name}>{name}</option>
+          ))}
         </select>
       </div>
 
@@ -293,9 +306,9 @@ function ItemListTab({ submissions, role }) {
                 <th>Model</th>
                 <th>Color</th>
                 <th>Size</th>
-                <th>Donor</th>
-                <th>BOEC</th>
                 <th>Price</th>
+                <th>Seller</th>
+                <th>BOEC</th>
                 <th>Sold</th>
                 <th></th>
               </tr>
@@ -317,9 +330,10 @@ function ItemListTab({ submissions, role }) {
                   <td>{row.model || '—'}</td>
                   <td>{row.color}</td>
                   <td>{row.size}</td>
+                  <td>${fmt(row.price || 0)}</td>
                   <td>
-                    <button className="donor-link" onClick={() => openProfile(row._docId)}>
-                      {row.donorName}
+                    <button className="seller-link" onClick={() => openProfile(row._docId)}>
+                      {row.sellerName}
                     </button>
                   </td>
                   <td>
@@ -327,7 +341,6 @@ function ItemListTab({ submissions, role }) {
                       ? <span className="boec-badge">Yes</span>
                       : <span style={{ color: 'var(--gray-400)' }}>No</span>}
                   </td>
-                  <td>${fmt(row.price || 0)}</td>
                   <td>
                     <input
                       type="checkbox"
@@ -373,7 +386,7 @@ function PayoutsTab({ submissions }) {
     );
   }
 
-  const perDonor = useMemo(() => {
+  const perSeller = useMemo(() => {
     return submissions.map(sub => {
       const soldItems = (sub.items || []).filter(item => item.sold);
       const totalSold = soldItems.reduce((sum, item) => sum + (item.price || 0), 0);
@@ -399,11 +412,11 @@ function PayoutsTab({ submissions }) {
     const grossSales = allSoldItems.reduce((sum, i) => sum + (i.price || 0), 0);
 
     // owed to sellers across all submissions
-    const totalOwedToSellers = perDonor.reduce((sum, d) => sum + d.owedToSeller, 0);
+    const totalOwedToSellers = perSeller.reduce((sum, d) => sum + d.owedToSeller, 0);
     const totalToScholarship = grossSales - totalOwedToSellers;
 
     return { grossSales, totalOwedToSellers, totalToScholarship };
-  }, [submissions, perDonor]);
+  }, [submissions, perSeller]);
 
   function togglePaid(id) {
     setPaidMap(prev => ({ ...prev, [id]: !prev[id] }));
@@ -428,20 +441,20 @@ function PayoutsTab({ submissions }) {
       </div>
 
       {profileSub && (
-        <DonorProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
+        <SellerProfileModal submission={profileSub} onClose={() => setProfileSub(null)} />
       )}
 
       <div className="admin-controls" style={{ marginBottom: 16 }}>
         <input
           type="search"
           className="admin-search"
-          placeholder="Search by donor name…"
+          placeholder="Search by seller name…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
       </div>
 
-      {perDonor.length === 0 ? (
+      {perSeller.length === 0 ? (
         <div className="empty-state">
           <p>No sold items yet. Mark items as sold in the Item List tab.</p>
         </div>
@@ -450,7 +463,7 @@ function PayoutsTab({ submissions }) {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Donor Name</th>
+                <th>Seller Name</th>
                 <th>Venmo</th>
                 <th>Total Sold</th>
                 <th>% Owed</th>
@@ -464,36 +477,36 @@ function PayoutsTab({ submissions }) {
               </tr>
             </thead>
             <tbody>
-              {[...perDonor].filter(d => !search.trim() || d.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
+              {[...perSeller].filter(d => !search.trim() || d.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
                 if (!paidSort) return 0;
                 const aPaid = !!paidMap[a.id];
                 const bPaid = !!paidMap[b.id];
                 if (paidSort === 'paid-first') return aPaid === bPaid ? 0 : aPaid ? -1 : 1;
                 return aPaid === bPaid ? 0 : aPaid ? 1 : -1;
-              }).map(donor => (
-                <tr key={donor.id}>
+              }).map(seller => (
+                <tr key={seller.id}>
                   <td>
-                    <button className="donor-link" onClick={() => openProfile(donor.id)}>
-                      {donor.name}
+                    <button className="seller-link" onClick={() => openProfile(seller.id)}>
+                      {seller.name}
                     </button>
                   </td>
                   <td>
-                    {donor.venmo
-                      ? <a href={`https://venmo.com/${donor.venmo}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)', textDecoration: 'underline' }}>@{donor.venmo}</a>
+                    {seller.venmo
+                      ? <a href={`https://venmo.com/${seller.venmo}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)', textDecoration: 'underline' }}>@{seller.venmo}</a>
                       : '—'}
                   </td>
-                  <td>${fmt(donor.totalSold)}</td>
-                  <td>{donor.sellerPct}%</td>
-                  <td>${fmt(donor.owedToSeller)}</td>
+                  <td>${fmt(seller.totalSold)}</td>
+                  <td>{seller.sellerPct}%</td>
+                  <td>${fmt(seller.owedToSeller)}</td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input
                         type="checkbox"
-                        checked={!!paidMap[donor.id]}
-                        onChange={() => togglePaid(donor.id)}
+                        checked={!!paidMap[seller.id]}
+                        onChange={() => togglePaid(seller.id)}
                         style={{ accentColor: 'var(--teal)' }}
                       />
-                      {paidMap[donor.id]
+                      {paidMap[seller.id]
                         ? <span className="paid-badge">Paid ✓</span>
                         : <span className="unpaid-badge">Pending</span>}
                     </div>
