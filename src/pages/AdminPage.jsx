@@ -395,6 +395,7 @@ function ItemListTab({ submissions, role }) {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Seller</th>
                 <th>Brand</th>
                 <th>Description</th>
                 <th>Model</th>
@@ -402,7 +403,6 @@ function ItemListTab({ submissions, role }) {
                 <th>Size</th>
                 <th>Price</th>
                 <th>BOEC</th>
-                <th>Seller</th>
                 <th>Sold</th>
               </tr>
             </thead>
@@ -414,6 +414,11 @@ function ItemListTab({ submissions, role }) {
                   onClick={() => setSelectedItem(row)}
                   style={{ cursor: 'pointer' }}
                 >
+                  <td onClick={e => e.stopPropagation()}>
+                    <button className="seller-link" onClick={() => openProfile(row._docId)}>
+                      {row.sellerName}
+                    </button>
+                  </td>
                   <td>{row.brand}</td>
                   <td>{row.description}</td>
                   <td>{row.model || '—'}</td>
@@ -424,11 +429,6 @@ function ItemListTab({ submissions, role }) {
                     {row.donateToBoec
                       ? <span className="boec-badge">Yes</span>
                       : <span style={{ color: 'var(--gray-400)' }}>No</span>}
-                  </td>
-                  <td onClick={e => e.stopPropagation()}>
-                    <button className="seller-link" onClick={() => openProfile(row._docId)}>
-                      {row.sellerName}
-                    </button>
                   </td>
                   <td onClick={e => e.stopPropagation()}>
                     <input
