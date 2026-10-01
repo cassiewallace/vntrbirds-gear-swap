@@ -104,7 +104,7 @@ export default function IntroPage() {
 
         {/* Accepted Items */}
         <div className="card">
-          <div className="card-title" style={{ color: 'var(--magenta)' }}>What we accept</div>
+          <div className="card-title">What we accept</div>
 
           <div className="info-block" style={{ marginBottom: 0 }}>
             <p>All items must be new or gently used — clean, no tears or damage.</p>
