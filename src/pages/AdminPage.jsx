@@ -10,15 +10,15 @@ const VOLUNTEER_PASSWORD = 'birdswapvolunteer';
 
 const CATEGORIES = [
   'All Categories',
-  'Hiking Gear',
-  'Bike Gear',
-  'Rock Climbing Gear',
-  'Camping Gear',
-  'Skateboard',
-  'Backpack',
-  'Helmet',
-  'Dog Gear',
-  'Apparel',
+  'Ski & Ride',
+  'Biking',
+  'Hiking',
+  'Rock Climbing',
+  'Camping',
+  'Backcountry',
+  'Outerwear',
+  'Apparel & Accessories',
+  'Misc.',
   'Free Bin',
 ];
 
