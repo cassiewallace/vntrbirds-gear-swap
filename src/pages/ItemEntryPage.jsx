@@ -11,7 +11,7 @@ const CATEGORIES = [
   'Rock Climbing Gear',
   'Camping Gear',
   'Skateboard',
-  'Ski & Ride Setups',
+  'Ski & Ride',
   'Backcountry Gear',
   'Outerwear',
   'Apparel',

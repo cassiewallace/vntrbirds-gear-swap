@@ -18,7 +18,7 @@ const CATEGORIES = [
   { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
   { name: 'Camping Gear', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags', 'Rain jackets'] },
   { name: 'Skateboards', items: [] },
-  { name: 'Ski & Ride Setups', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles'] },
+  { name: 'Ski & Ride', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles'] },
   { name: 'Backcountry Gear', items: ['Shovels', 'Probes', 'Backpacks', 'No electronics (e.g. transceivers)'] },
   { name: 'Outerwear', items: ['Jackets', 'Snow pants', 'Gloves / Mittens'] },
   { name: 'Apparel', items: ['First layers', 'Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers', 'Streetwear boots / shoes'] },
