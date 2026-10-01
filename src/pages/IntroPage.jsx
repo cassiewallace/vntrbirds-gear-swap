@@ -13,12 +13,12 @@ const PROVISIONS = [
 ];
 
 const CATEGORIES = [
-  { name: 'Hiking Gear', items: ['Boots, apparel (pants, shorts, tech tees)', 'Packs, hiking poles'] },
-  { name: 'Bike Gear', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Goggles (Free of scratches and tears in foam)', 'Packs', 'Helmets (New helmets only — no used helmets)'] },
-  { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
-  { name: 'Camping Gear', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags'] },
-  { name: 'Ski & Ride Gear', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles', 'Goggles (Free of scratches and tears in foam)', 'Helmets (New helmets only — no used helmets)'] },
-  { name: 'Backcountry Gear', items: ['Shovels', 'Probes', 'Backpacks', 'No electronics (e.g. transceivers)'] },
+  { name: 'Hiking', items: ['Boots, apparel (pants, shorts, tech tees)', 'Packs, hiking poles'] },
+  { name: 'Bike', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Goggles (Free of scratches and tears in foam)', 'Packs', 'Helmets (New helmets only — no used helmets)'] },
+  { name: 'Rock Climbing', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
+  { name: 'Camping', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags'] },
+  { name: 'Ski & Ride', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles', 'Goggles (Free of scratches and tears in foam)', 'Helmets (New helmets only — no used helmets)'] },
+  { name: 'Backcountry', items: ['Shovels', 'Probes', 'Backpacks', 'No electronics (e.g. transceivers)'] },
   { name: 'Outerwear', items: ['Jackets', 'Snow pants', 'Gloves / Mittens'] },
   { name: 'Apparel & Accessories', items: ['First layers', 'Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers', 'Streetwear boots / shoes', 'Rain jackets', 'Sunglasses'] },
   { name: 'Misc.', items: ['Skateboards', 'Dog Gear'] },
