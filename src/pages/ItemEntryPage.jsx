@@ -6,11 +6,11 @@ import { useSubmission } from '../context/SubmissionContext';
 import { HeaderLight } from '../components/Header';
 
 const CATEGORIES = [
+  'Ski & Ride',
+  'Biking',
   'Hiking',
-  'Bike',
   'Rock Climbing',
   'Camping',
-  'Ski & Ride',
   'Backcountry',
   'Outerwear',
   'Apparel & Accessories',
