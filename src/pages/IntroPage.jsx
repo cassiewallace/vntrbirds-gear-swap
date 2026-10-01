@@ -14,15 +14,14 @@ const PROVISIONS = [
 
 const CATEGORIES = [
   { name: 'Hiking Gear', items: ['Boots, apparel (pants, shorts, tech tees)', 'Packs, hiking poles'] },
-  { name: 'Bike Gear', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Downhill goggles (no scratches/foam tears)', 'Packs'] },
+  { name: 'Bike Gear', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Downhill goggles (no scratches/foam tears)', 'Packs', 'Helmets (New helmets only — no used helmets)'] },
   { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
   { name: 'Camping Gear', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags', 'Rain jackets'] },
   { name: 'Skateboards', items: [] },
-  { name: 'Ski & Ride', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles'] },
+  { name: 'Ski & Ride Gear', items: ['Snowboards', 'Splitboards', 'Skis', 'Touring Ski Setups', 'Cross Country Skis', 'Snowshoes', 'Bindings', 'Boots', 'Poles', 'Helmets (New helmets only — no used helmets)'] },
   { name: 'Backcountry Gear', items: ['Shovels', 'Probes', 'Backpacks', 'No electronics (e.g. transceivers)'] },
   { name: 'Outerwear', items: ['Jackets', 'Snow pants', 'Gloves / Mittens'] },
   { name: 'Apparel', items: ['First layers', 'Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers', 'Streetwear boots / shoes'] },
-  { name: 'Helmets', items: ['New helmets only — no used helmets'] },
   { name: 'Goggles', items: ['Free of scratches and tears in foam'] },
   { name: 'Sunglasses', items: [] },
   { name: 'Dog Gear', items: [] },
