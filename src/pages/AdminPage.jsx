@@ -783,7 +783,6 @@ function PayoutsTab({ submissions, role }) {
 
 /* ── Settings Tab ── */
 function SettingsTab() {
-  const [season, setSeason] = useState('Summer');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -796,7 +795,6 @@ function SettingsTab() {
       const snap = await getDoc(doc(db, 'settings', 'event'));
       if (snap.exists()) {
         const d = snap.data();
-        setSeason(d.season || 'Summer');
         setDate(d.date || '');
         setTime(d.time || '');
         setLocation(d.location || '');
@@ -808,7 +806,7 @@ function SettingsTab() {
   async function handleSave() {
     setSaving(true);
     try {
-      await setDoc(doc(db, 'settings', 'event'), { season, date, time, location });
+      await setDoc(doc(db, 'settings', 'event'), { date, time, location });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -839,35 +837,6 @@ function SettingsTab() {
 
   return (
     <div style={{ maxWidth: 640, padding: '32px 24px' }}>
-
-      {/* Season */}
-      <div style={rowStyle}>
-        <div style={labelColStyle}>
-          <div style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Season</div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--gray-600)' }}>Toggle between Summer and Winter gear swap mode.</div>
-        </div>
-        <div style={controlColStyle}>
-          <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--gray-200)', width: 'fit-content' }}>
-            {['Summer', 'Winter'].map(s => (
-              <button
-                key={s}
-                onClick={() => setSeason(s)}
-                style={{
-                  padding: '10px 20px',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: season === s ? '#111' : '#fff',
-                  color: season === s ? '#fff' : '#111',
-                }}
-              >
-                {s === 'Summer' ? '☀️' : '❄️'} {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Date */}
       <div style={rowStyle}>

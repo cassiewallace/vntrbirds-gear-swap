@@ -904,34 +904,6 @@ h4, h5, h6 {
   color: var(--gray-600);
 }
 
-.season-toggle {
-  display: flex;
-  border: var(--border);
-  flex-shrink: 0;
-}
-
-.season-btn {
-  background: none;
-  border: none;
-  padding: 10px 20px;
-  font-family: 'MADE Tommy Soft', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 400;
-  cursor: pointer;
-  color: var(--gray-600);
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.season-btn + .season-btn {
-  border-left: var(--border);
-}
-
-.season-btn.active {
-  background: var(--dark);
-  color: var(--white);
-}
-
 .clear-data-btn {
   background: none;
   border: 1px solid var(--error);

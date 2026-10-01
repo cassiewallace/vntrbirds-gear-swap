@@ -12,20 +12,12 @@ const PROVISIONS = [
   'VNTRbirds WILL NOT provide compensation for lost, damaged, or stolen merchandise.',
 ];
 
-const SUMMER_CATEGORIES = [
+const CATEGORIES = [
   { name: 'Hiking Gear', items: ['Boots, apparel (pants, shorts, tech tees)', 'Packs, hiking poles'] },
   { name: 'Bike Gear', items: ['Bikes', 'Apparel (shorts, pants, jerseys, gloves)', 'Shoes (no torn/missing laces, soles intact)', 'Components (saddles, pedals, grips, tires)', 'Tools (tire levers, pump, tubes)', 'Downhill goggles (no scratches/foam tears)', 'Packs'] },
   { name: 'Rock Climbing Gear', items: ['Shoes, chalk bags', 'Ropes (new only)', 'Harnesses (new only)', 'Bouldering pads'] },
   { name: 'Camping Gear', items: ['Tents / shelter', 'Sleeping pads', 'Sleeping bags', 'Rain jackets'] },
   { name: 'Skateboards', items: [] },
-  { name: 'Backpacks', items: [] },
-  { name: 'Helmets', items: ['New helmets only — no used helmets'] },
-  { name: 'Dog Gear', items: [] },
-  { name: 'Apparel', items: ['Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers'] },
-  { name: '"Free Bin"', items: ['Gently used socks, hats, tees, etc.'] },
-];
-
-const WINTER_CATEGORIES = [
   { name: 'Snowboards / Skis', items: [] },
   { name: 'Splitboards / AT Ski Setups', items: [] },
   { name: 'Cross Country Skis', items: [] },
@@ -36,14 +28,14 @@ const WINTER_CATEGORIES = [
   { name: 'Backcountry Gear', items: ['No electronics (e.g. transceivers)'] },
   { name: 'Shovels', items: [] },
   { name: 'Probes', items: [] },
-  { name: 'Packs', items: [] },
+  { name: 'Backpacks', items: [] },
   { name: 'Outerwear', items: ['Jackets', 'Snow pants', 'Gloves / Mittens'] },
-  { name: 'Winter Clothing', items: ['First layers', 'Hoodies', 'Jeans', 'Streetwear boots / shoes', 'Backpacks'] },
+  { name: 'Apparel', items: ['First layers', 'Hoodies', 'Jeans', 'Hats', 'Jackets', 'Base layers', 'Streetwear boots / shoes'] },
   { name: 'Helmets', items: ['New helmets only — no used helmets'] },
   { name: 'Goggles', items: ['Free of scratches and tears in foam'] },
   { name: 'Sunglasses', items: [] },
   { name: 'Dog Gear', items: [] },
-  { name: '"Free Bin"', items: ['Gently used socks, buffs, beanies, etc.'] },
+  { name: '"Free Bin"', items: ['Gently used socks, hats, buffs, beanies, tees, etc.'] },
 ];
 
 export default function IntroPage() {
@@ -52,8 +44,6 @@ export default function IntroPage() {
   const [name, setName] = useState('');
   const [eventSettings, setEventSettings] = useState({ date: '', location: '', time: '' });
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const isWinter = localStorage.getItem('gearswap_season') === 'winter';
-  const CATEGORIES = isWinter ? WINTER_CATEGORIES : SUMMER_CATEGORIES;
   const eventDate = localStorage.getItem('gearswap_date') || '';
   const eventTime = localStorage.getItem('gearswap_time') || '';
   const eventDatetime = [eventDate, eventTime].filter(Boolean).join(' ') || 'TBD';
@@ -115,7 +105,7 @@ export default function IntroPage() {
         {/* Accepted Items */}
         <div className="card">
           <div className="card-label">What we accept</div>
-          <div className="card-title">{isWinter ? 'Winter Items' : 'Summer Items'}</div>
+          <div className="card-title">Accepted Items</div>
 
           <div className="info-block" style={{ marginBottom: 0 }}>
             <p>All items must be new or gently used — clean, no tears or damage.</p>

@@ -7,9 +7,6 @@ const ADMIN_PASSWORD = 'birdswap26';
 
 export default function AdminSettingsPage() {
   const navigate = useNavigate();
-  const [season, setSeason] = useState(
-    () => localStorage.getItem('gearswap_season') || 'summer'
-  );
   const [date, setDate] = useState(
     () => localStorage.getItem('gearswap_date') || ''
   );
@@ -25,11 +22,6 @@ export default function AdminSettingsPage() {
   const [clearError, setClearError] = useState('');
   const [clearing, setClearing] = useState(false);
   const [cleared, setCleared] = useState(false);
-
-  function handleSeasonChange(value) {
-    setSeason(value);
-    localStorage.setItem('gearswap_season', value);
-  }
 
   function openClearModal() {
     setClearPassword('');
@@ -72,27 +64,6 @@ export default function AdminSettingsPage() {
           Settings
         </h1>
         <div className="settings-card" style={{ marginTop: 32 }}>
-          <div className="settings-row">
-            <div className="settings-row-info">
-              <div className="settings-row-title">Season</div>
-              <div className="settings-row-desc">Toggle between Summer and Winter gear swap mode.</div>
-            </div>
-            <div className="season-toggle">
-              <button
-                className={`season-btn ${season === 'summer' ? 'active' : ''}`}
-                onClick={() => handleSeasonChange('summer')}
-              >
-                ☀️ Summer
-              </button>
-              <button
-                className={`season-btn ${season === 'winter' ? 'active' : ''}`}
-                onClick={() => handleSeasonChange('winter')}
-              >
-                ❄️ Winter
-              </button>
-            </div>
-          </div>
-
           <div className="settings-row">
             <div className="settings-row-info">
               <div className="settings-row-title">Date</div>

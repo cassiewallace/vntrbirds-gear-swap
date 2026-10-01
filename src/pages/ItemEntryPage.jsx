@@ -5,20 +5,12 @@ import { db } from '../firebase';
 import { useSubmission } from '../context/SubmissionContext';
 import { HeaderLight } from '../components/Header';
 
-const SUMMER_CATEGORIES = [
+const CATEGORIES = [
   'Hiking Gear',
   'Bike Gear',
   'Rock Climbing Gear',
   'Camping Gear',
   'Skateboard',
-  'Backpack',
-  'Helmet',
-  'Dog Gear',
-  'Apparel',
-  'Free Bin',
-];
-
-const WINTER_CATEGORIES = [
   'Snowboards / Skis',
   'Splitboards / AT Ski Setups',
   'Cross Country Skis',
@@ -29,19 +21,17 @@ const WINTER_CATEGORIES = [
   'Backcountry Gear',
   'Shovels',
   'Probes',
-  'Packs',
+  'Backpack',
   'Outerwear',
-  'Gloves / Mittens',
-  'Winter Clothing',
-  'Backpacks',
-  'Helmets',
+  'Apparel',
+  'Helmet',
   'Goggles',
   'Sunglasses',
   'Dog Gear',
   'Free Bin',
 ];
 
-function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors, categories }) {
+function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors }) {
   return (
     <div className="item-card">
       <div className="item-card-header">
@@ -62,7 +52,7 @@ function ItemCard({ item, index, onUpdate, onRemove, showRemove, errors, categor
             onChange={e => onUpdate('category', e.target.value)}
           >
             <option value="">Select category…</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           {errors?.category && <p className="error-text">{errors.category}</p>}
         </div>
@@ -165,7 +155,6 @@ export default function ItemEntryPage() {
   const [itemErrors, setItemErrors] = useState({});
   const [extraError, setExtraError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const categories = localStorage.getItem('gearswap_season') === 'winter' ? WINTER_CATEGORIES : SUMMER_CATEGORIES;
 
   function validateItems() {
     const errors = {};
@@ -250,7 +239,6 @@ export default function ItemEntryPage() {
             onRemove={() => removeItem(item.id)}
             showRemove={items.length > 1}
             errors={itemErrors[item.id]}
-            categories={categories}
           />
         ))}
 
