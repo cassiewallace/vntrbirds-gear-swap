@@ -13,7 +13,6 @@ const CATEGORIES = [
   'Skateboard',
   'Snow Gear',
   'Splitboards / AT Ski Setups',
-  'Poles',
   'Boots',
   'Backcountry Gear',
   'Outerwear',
