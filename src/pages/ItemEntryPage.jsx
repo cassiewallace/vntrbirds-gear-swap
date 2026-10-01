@@ -15,7 +15,6 @@ const CATEGORIES = [
   'Backcountry Gear',
   'Outerwear',
   'Apparel',
-  'Goggles',
   'Sunglasses',
   'Dog Gear',
   'Free Bin',
