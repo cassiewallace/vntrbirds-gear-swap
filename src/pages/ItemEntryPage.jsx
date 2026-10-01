@@ -10,12 +10,11 @@ const CATEGORIES = [
   'Bike Gear',
   'Rock Climbing Gear',
   'Camping Gear',
-  'Skateboard',
   'Ski & Ride Gear',
   'Backcountry Gear',
   'Outerwear',
   'Apparel & Accessories',
-  'Dog Gear',
+  'Misc.',
   'Free Bin',
 ];
 
