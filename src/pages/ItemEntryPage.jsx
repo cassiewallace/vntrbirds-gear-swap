@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import { useSubmission } from '../context/SubmissionContext';
 import { HeaderLight } from '../components/Header';
 
+const BASE_DONATION_PERCENT = 40;
+
 const CATEGORIES = [
   'Ski & Ride',
   'Biking',
@@ -141,6 +143,24 @@ export default function ItemEntryPage() {
   const { sellerInfo, items, addItem, removeItem, updateItem, extraDonationPercent, setExtraDonationPercent, setSubmissionId } = useSubmission();
   const [itemErrors, setItemErrors] = useState({});
   const [extraError, setExtraError] = useState('');
+  const [totalDonationPercent, setTotalDonationPercent] = useState(
+    String(BASE_DONATION_PERCENT + (parseFloat(extraDonationPercent) || 0))
+  );
+
+  function updateTotalDonation(val) {
+    setTotalDonationPercent(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num >= BASE_DONATION_PERCENT && num <= 100) {
+      const extra = num - BASE_DONATION_PERCENT;
+      setExtraDonationPercent(extra > 0 ? String(extra) : '');
+    }
+  }
+
+  function clampTotalDonation() {
+    const num = parseFloat(totalDonationPercent);
+    const clamped = isNaN(num) ? BASE_DONATION_PERCENT : Math.min(100, Math.max(BASE_DONATION_PERCENT, num));
+    updateTotalDonation(String(clamped));
+  }
   const [submitting, setSubmitting] = useState(false);
 
   function validateItems() {
@@ -165,11 +185,9 @@ export default function ItemEntryPage() {
     setItemErrors(errors);
 
     let extraErr = '';
-    if (extraDonationPercent !== '') {
-      const val = parseFloat(extraDonationPercent);
-      if (isNaN(val) || val < 0 || val > 60) {
-        extraErr = 'Enter a value between 0 and 60';
-      }
+    const totalVal = parseFloat(totalDonationPercent);
+    if (isNaN(totalVal) || totalVal < BASE_DONATION_PERCENT || totalVal > 100) {
+      extraErr = `Enter a value between ${BASE_DONATION_PERCENT} and 100`;
     }
     setExtraError(extraErr);
 
@@ -236,33 +254,33 @@ export default function ItemEntryPage() {
         {/* Extra donation */}
         <div className="card">
           <div className="card-header">
-            <h2>Extra Scholarship Donation</h2>
+            <h2>Scholarship Donation</h2>
           </div>
           <p style={{ fontSize: '0.9rem', color: 'var(--gray-600)', marginBottom: 16 }}>
-            40% of your sales already go to the VNTRbirds scholarship fund. If you'd like to donate more, enter the additional percentage below (max 60%).
+            At least 40% of your sales go to the VNTRbirds scholarship fund. If you'd like to donate more, increase the percentage below (up to 100%).
           </p>
           <div className="form-group" style={{ maxWidth: 260 }}>
-            <label className="form-label">Additional donation % <span className="optional">(optional)</span></label>
+            <label className="form-label">Total donation %</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <input
                 type="number"
                 className={`form-input ${extraError ? 'error' : ''}`}
-                placeholder="e.g. 10"
-                min="0"
-                max="60"
-                value={extraDonationPercent}
+                min={BASE_DONATION_PERCENT}
+                max="100"
+                value={totalDonationPercent}
                 onChange={e => {
                   const val = e.target.value;
-                  if (val === '' || parseFloat(val) <= 60) setExtraDonationPercent(val);
+                  if (val === '' || parseFloat(val) <= 100) updateTotalDonation(val);
                 }}
+                onBlur={clampTotalDonation}
                 style={{ maxWidth: 120 }}
               />
               <span style={{ fontSize: '0.95rem', color: 'var(--gray-600)' }}>%</span>
             </div>
             {extraError && <p className="error-text">{extraError}</p>}
-            {extraDonationPercent !== '' && !extraError && (
+            {parseFloat(extraDonationPercent) > 0 && !extraError && (
               <p style={{ fontSize: '0.82rem', color: 'var(--teal)', marginTop: 6 }}>
-                You'll donate {40 + parseFloat(extraDonationPercent || 0)}% total to the scholarship fund.
+                Thank you! That's an extra {parseFloat(extraDonationPercent)}% on top of the standard 40%.
               </p>
             )}
           </div>
